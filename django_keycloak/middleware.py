@@ -1,17 +1,18 @@
 import re
 
 from django.conf import settings
+from django.contrib.auth.models import User
 from django.http.response import JsonResponse
+from django.utils import timezone
 from django.utils.deprecation import MiddlewareMixin
 from rest_framework.exceptions import AuthenticationFailed, NotAuthenticated
 
 from django_keycloak.keycloak import Connect
 
 
-def pass_auth(self, request):
+def pass_auth(request):
     """
     Check if the current UTR path needs to skip authorization
-    @param self:
     @param request:
     @return:
     """
@@ -100,7 +101,7 @@ class KeycloakDRFMiddleware(MiddlewareMixin):
         To be executed before the view each request
         """
         # Checks URIs that doesn't need authentication
-        if pass_auth(self, request):
+        if pass_auth(request):
             return self.get_response(request)
 
             # Checks if exists an authentication in the http request header
@@ -149,7 +150,7 @@ class KeycloakMiddleware(MiddlewareMixin):
         To be executed before the view each request
         """
         # Checks URIs that doesn't need authentication
-        if pass_auth(self, request):
+        if pass_auth(request):
             return self.get_response(request)
 
             # Get keycloak connection and token from previous middleware (
@@ -161,7 +162,7 @@ class KeycloakMiddleware(MiddlewareMixin):
         # added them to the request
         user_info = keycloak.get_user_info(token)
 
-        request.keycloak_user = {
+        request.remote_user = {
             'client_roles': keycloak.client_roles(token),
             'realm_roles': keycloak.client_roles(token),
             'client_scope': keycloak.client_scope(token),
@@ -177,5 +178,19 @@ class KeycloakMiddleware(MiddlewareMixin):
         # session
         del request.session.keycloak_connection
         del request.session.token
+
+        # TODO: Create a specific model for User with a specific field for
+        #  keycloak user ID that will be the primary_key
+        # Get user id from keycloak and create a local reference
+        c_user, created = User.objects.update_or_create(
+            username=keycloak.get_user_id(token),
+            defaults={
+                'is_active': True,
+                'is_staff': False,
+                'is_superuser': False,
+                'last_login': timezone.now()
+            }
+        )
+        request.user = c_user
 
         return self.get_response(request)
