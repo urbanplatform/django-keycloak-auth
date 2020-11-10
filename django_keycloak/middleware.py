@@ -1,7 +1,7 @@
 import re
 
 from django.conf import settings
-from django.contrib.auth.models import User
+from django.contrib.auth import get_user_model
 from django.http.response import JsonResponse
 from django.utils import timezone
 from django.utils.deprecation import MiddlewareMixin
@@ -70,7 +70,8 @@ class KeycloakDRFMiddleware(MiddlewareMixin):
             self.realm = self.config.get('REALM')
             self.client_id = self.config.get('CLIENT_ID')
             self.client_secret_key = self.config.get('CLIENT_SECRET_KEY')
-        except KeyError as e:
+            self.internal_url = self.config.get('INTERNAL_URL')
+        except KeyError:
             raise Exception("KEYCLOAK configuration is not defined.")
 
         if not self.server_url:
@@ -90,7 +91,8 @@ class KeycloakDRFMiddleware(MiddlewareMixin):
             server_url=self.server_url,
             realm=self.realm,
             client_id=self.client_id,
-            client_secret_key=self.client_secret_key
+            client_secret_key=self.client_secret_key,
+            internal_url=self.internal_url,
         )
 
         # Django response
@@ -182,6 +184,7 @@ class KeycloakMiddleware(MiddlewareMixin):
         # TODO: Create a specific model for User with a specific field for
         #  keycloak user ID that will be the primary_key
         # Get user id from keycloak and create a local reference
+        User = get_user_model()
         c_user, created = User.objects.update_or_create(
             username=keycloak.get_user_id(token),
             defaults={

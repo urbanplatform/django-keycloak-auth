@@ -1,4 +1,5 @@
 import requests
+from urllib.parse import urlparse
 
 from django_keycloak.urls import (
     KEYCLOAK_INTROSPECT_TOKEN, KEYCLOAK_USER_INFO, KEYCLOAK_GET_USERS,
@@ -12,7 +13,7 @@ class Connect:
     """
 
     def __init__(self, server_url, realm, client_id,
-                 client_secret_key=None):
+                 client_secret_key=None, internal_url=None):
         """
         :param server_url:
         :param realm:
@@ -23,6 +24,7 @@ class Connect:
         self.realm = realm
         self.client_id = client_id
         self.client_secret_key = client_secret_key
+        self.internal_url = internal_url
 
     def introspect(self, token):
         """
@@ -39,14 +41,18 @@ class Connect:
             'Content-Type': 'application/x-www-form-urlencoded',
         }
 
+        server_url = self.server_url
+        if self.internal_url:
+            server_url = self.internal_url
+            headers['HOST'] = urlparse(self.server_url).netloc
+
         response = requests.request(
             "POST",
-            KEYCLOAK_INTROSPECT_TOKEN.format(
-                self.server_url, self.realm
-            ),
+            KEYCLOAK_INTROSPECT_TOKEN.format(server_url, self.realm),
             data=payload,
             headers=headers
         )
+
         return response.json()
 
     def get_token(self):
@@ -64,10 +70,15 @@ class Connect:
             'Content-Type': 'application/x-www-form-urlencoded',
         }
 
+        server_url = self.server_url
+        if self.internal_url:
+            server_url = self.internal_url
+            headers['HOST'] = urlparse(self.server_url).netloc
+
         response = requests.request(
             "POST",
             KEYCLOAK_GET_TOKEN.format(
-                self.server_url, self.realm
+                server_url, self.realm
             ),
             data=payload,
             headers=headers
@@ -83,10 +94,15 @@ class Connect:
             'Content-Type': 'application/json',
             'Authorization': 'Bearer {}'.format(token),
         }
+        server_url = self.server_url
+        if self.internal_url:
+            server_url = self.internal_url
+            headers['HOST'] = urlparse(self.server_url).netloc
+
         response = requests.request(
             "GET",
             KEYCLOAK_GET_USERS.format(
-                self.server_url, self.realm
+                server_url, self.realm
             ),
             headers=headers
         )
@@ -99,9 +115,14 @@ class Connect:
         headers = {
             'authorization': "Bearer " + token
         }
+        server_url = self.server_url
+        if self.internal_url:
+            server_url = self.internal_url
+            headers['HOST'] = urlparse(self.server_url).netloc
+
         response = requests.request(
             "GET", KEYCLOAK_USER_INFO.format(
-                self.server_url, self.realm
+                server_url, self.realm
             ),
             headers=headers)
         return response.json()
