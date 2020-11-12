@@ -28,9 +28,7 @@ class KeycloakUserManager(UserManager):
         if not self.keycloak.has_superuser_perm(token):
             raise ValueError("You are not an administrator")
 
-        user = self.create_from_token(
-            token, password, is_staff=True, is_superuser=True, is_active=True
-        )
+        user = self.create_from_token(token, password)
         user.save(using=self._db)
         return user
 
@@ -40,10 +38,21 @@ class KeycloakUserManager(UserManager):
         """
         if not self.keycloak.is_token_active(token):
             raise ValueError("Invalid token")
+
         user_info = self.keycloak.introspect(token)
+
+        # set admin permissions if user is admin
+        is_staff = False
+        is_superuser = False
+        if self.keycloak.has_superuser_perm(token):
+            is_staff = True
+            is_superuser = True
+
         user = self.model(
             username=user_info.get("username"),
             keycloak_id=user_info.get("sub"),
+            is_staff=is_staff,
+            is_superuser=is_superuser,
             **kwargs
         )
         user.save(using=self._db)

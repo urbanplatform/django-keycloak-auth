@@ -11,6 +11,8 @@ class UserAdmin(admin.ModelAdmin):
     list_display = (
         "username",
         "keycloak_id",
+        "is_staff",
+        "is_superuser",
     )
     fields = [
         "username",
