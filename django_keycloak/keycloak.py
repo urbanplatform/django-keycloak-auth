@@ -185,7 +185,7 @@ class Connect:
         Verify if introspect token is active.
         """
         introspect_token = self.introspect(token)
-        return True if introspect_token.get('active', None) else False
+        return introspect_token.get('active', False)
 
     def client_roles(self, token):
         """

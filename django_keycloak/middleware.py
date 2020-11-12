@@ -87,13 +87,7 @@ class KeycloakDRFMiddleware(MiddlewareMixin):
             raise Exception("CLIENT_SECRET_KEY is not defined.")
 
         # Create Keycloak connection
-        self.keycloak = Connect(
-            server_url=self.server_url,
-            realm=self.realm,
-            client_id=self.client_id,
-            client_secret_key=self.client_secret_key,
-            internal_url=self.internal_url,
-        )
+        self.keycloak = Connect()
 
         # Django response
         self.get_response = get_response
@@ -184,10 +178,11 @@ class KeycloakMiddleware(MiddlewareMixin):
         # TODO: Create a specific model for User with a specific field for
         #  keycloak user ID that will be the primary_key
         # Get user id from keycloak and create a local reference
-        User = get_user_model()
-        c_user, created = User.objects.update_or_create(
-            username=keycloak.get_user_id(token),
+        user_model = get_user_model()
+        c_user, created = user_model.objects.update_or_create(
+            keycloak_id=keycloak.get_user_id(token),
             defaults={
+                'username': keycloak.get_user_info(token).get('username'),
                 'is_active': True,
                 'is_staff': False,
                 'is_superuser': False,
