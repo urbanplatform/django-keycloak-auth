@@ -27,8 +27,7 @@ class UserAdmin(admin.ModelAdmin):
         link = KEYCLOAK_ADMIN_USER_PAGE.format(
             host=config.get("SERVER_URL"), realm=config.get("REALM"), keycloak_id=label
         )
-        foo = format_html('<a href="{link}" target="_blank">{label}</a>', link=link, label=label)
-        return foo
+        return format_html('<a href="{link}" target="_blank">{label}</a>', link=link, label=label)
 
     keycloak_link.short_description = _("keycloak link")
 
