@@ -6,7 +6,7 @@ from django.utils.translation import gettext_lazy as _
 from .managers import KeycloakUserManager
 
 
-class CustomUser(AbstractBaseUser, PermissionsMixin):
+class KeycloakUser(AbstractBaseUser, PermissionsMixin):
     username = models.CharField(_("username"), unique=True, max_length=20, primary_key=True)
     keycloak_id = models.UUIDField(_("keycloak_id"))
     is_staff = models.BooleanField(default=False)

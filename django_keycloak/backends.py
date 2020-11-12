@@ -1,6 +1,6 @@
 from django.contrib.auth.backends import RemoteUserBackend
 
-from django_keycloak.models import CustomUser
+from django_keycloak.models import KeycloakUser
 from django_keycloak.keycloak import Connect
 
 
@@ -14,13 +14,13 @@ class KeycloakAuthenticationBackend(RemoteUserBackend):
         if not keycloak.is_token_active(token):
             return
         try:
-            user = CustomUser.objects.get(username=username)
-        except CustomUser.DoesNotExist:
-            user = CustomUser.objects.create_user(username, password)
+            user = KeycloakUser.objects.get(username=username)
+        except KeycloakUser.DoesNotExist:
+            user = KeycloakUser.objects.create_user(username, password)
         return user
 
     def get_user(self, username):
         try:
-            return CustomUser.objects.get(username=username)
-        except CustomUser.DoesNotExist:
+            return KeycloakUser.objects.get(username=username)
+        except KeycloakUser.DoesNotExist:
             return

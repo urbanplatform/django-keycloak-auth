@@ -3,7 +3,7 @@ from django.contrib import admin
 from django.utils.html import format_html
 from django.utils.translation import gettext_lazy as _
 
-from django_keycloak.models import CustomUser
+from django_keycloak.models import KeycloakUser
 from django_keycloak.urls import KEYCLOAK_ADMIN_USER_PAGE
 
 
@@ -42,4 +42,4 @@ class UserAdmin(admin.ModelAdmin):
         return False
 
 
-admin.site.register(CustomUser, UserAdmin)
+admin.site.register(KeycloakUser, UserAdmin)
