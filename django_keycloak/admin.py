@@ -1,10 +1,36 @@
+from django.conf import settings
 from django.contrib import admin
+from django.utils.html import format_html
+from django.utils.translation import gettext_lazy as _
 
 from django_keycloak.models import CustomUser
+from django_keycloak.urls import KEYCLOAK_ADMIN_USER_PAGE
 
 
 class UserAdmin(admin.ModelAdmin):
-    list_display = ('username',)
+    list_display = (
+        "username",
+        "keycloak_id",
+    )
+    fields = [
+        "username",
+        "keycloak_link",
+        "is_staff",
+        "is_superuser",
+        "is_active",
+    ]
+    readonly_fields = ["keycloak_link"]
+
+    def keycloak_link(self, obj):
+        config = settings.KEYCLOAK_CONFIG
+        label = obj.keycloak_id
+        link = KEYCLOAK_ADMIN_USER_PAGE.format(
+            host=config.get("SERVER_URL"), realm=config.get("REALM"), keycloak_id=label
+        )
+        foo = format_html('<a href="{link}" target="_blank">{label}</a>', link=link, label=label)
+        return foo
+
+    keycloak_link.short_description = _("keycloak link")
 
     def has_delete_permission(self, request, obj=None):
         return False
