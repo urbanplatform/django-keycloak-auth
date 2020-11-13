@@ -29,18 +29,7 @@ class KeycloakGrapheneMiddleware(MiddlewareMixin):
     """
 
     def __init__(self, get_response):
-        # Get configurations from Django the settings file
-        self.config = settings.KEYCLOAK_CONFIG
-
-        # TODO: Read and check keycloak configurations
-
-        # Create Keycloak connection
-        self.keycloak = Connect(
-            server_url=self.server_url,
-            realm=self.realm,
-            client_id=self.client_id,
-            client_secret_key=self.client_secret_key
-        )
+        self.keycloak = Connect()
 
         # Django response
         self.get_response = get_response
@@ -61,39 +50,7 @@ class KeycloakDRFMiddleware(MiddlewareMixin):
     """
 
     def __init__(self, get_response):
-        # Get configurations from Django the settings file
-        self.config = settings.KEYCLOAK_CONFIG
-
-        # Read keycloak configurations
-        try:
-            self.server_url = self.config.get('SERVER_URL')
-            self.realm = self.config.get('REALM')
-            self.client_id = self.config.get('CLIENT_ID')
-            self.client_secret_key = self.config.get('CLIENT_SECRET_KEY')
-            self.internal_url = self.config.get('INTERNAL_URL')
-        except KeyError:
-            raise Exception("KEYCLOAK configuration is not defined.")
-
-        if not self.server_url:
-            raise Exception("SERVER_URL is not defined.")
-
-        if not self.realm:
-            raise Exception("REALM is not defined.")
-
-        if not self.client_id:
-            raise Exception("CLIENT_ID is not defined.")
-
-        if not self.client_secret_key:
-            raise Exception("CLIENT_SECRET_KEY is not defined.")
-
-        # Create Keycloak connection
-        self.keycloak = Connect(
-            server_url=self.server_url,
-            realm=self.realm,
-            client_id=self.client_id,
-            client_secret_key=self.client_secret_key,
-            internal_url=self.internal_url,
-        )
+        self.keycloak = Connect()
 
         # Django response
         self.get_response = get_response
@@ -119,8 +76,7 @@ class KeycloakDRFMiddleware(MiddlewareMixin):
             token = auth_header[1]
         else:
             return JsonResponse(
-                {"detail": "Invalid token structure. Must be 'Bearer "
-                           "<token>'"},
+                {"detail": "Invalid token structure. Must be 'Bearer <token>'"},
                 status=AuthenticationFailed.status_code
             )
 
