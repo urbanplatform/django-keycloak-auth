@@ -137,19 +137,11 @@ class KeycloakMiddleware(MiddlewareMixin):
         del request.session.keycloak_connection
         del request.session.token
 
-        # TODO: Create a specific model for User with a specific field for
-        #  keycloak user ID that will be the primary_key
-        # Get user id from keycloak and create a local reference
         User = get_user_model()
-        c_user, created = User.objects.update_or_create(
-            username=keycloak.get_user_id(token),
-            defaults={
-                'is_active': True,
-                'is_staff': False,
-                'is_superuser': False,
-                'last_login': timezone.now()
-            }
-        )
-        request.user = c_user
+        # get user or create from token
+        try:
+            request.user = User.objects.get(keycloak_id=keycloak.get_user_id(token))
+        except User.DoesNotExist:
+            request.user = User.objects.create_from_token(token)
 
         return self.get_response(request)
