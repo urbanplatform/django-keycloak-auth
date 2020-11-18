@@ -31,6 +31,9 @@ class Connect:
             self.internal_url = internal_url or self.config.get('INTERNAL_URL')
             self.client_admin_role = self.config.get("CLIENT_ADMIN_ROLE", "admin")
             self.realm_admin_role = self.config.get("REALM_ADMIN_ROLE", "admin")
+            self.graphql_endpoint = self.config.get("GRAPHQL_ENDPOINT", None)
+            self.exempt_uris = self.config.get("EXEMPT_URIS", [])
+
         except KeyError:
             raise Exception("KEYCLOAK configuration is not defined.")
 
