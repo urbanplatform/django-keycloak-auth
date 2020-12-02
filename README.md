@@ -6,16 +6,15 @@ This package can only be used for projects started from scratch since they overr
 ## Installation
 
 1. Add `django_keycloak` to the Django `INSTALLED_APPS`
-2. Add `django_keycloak.middleware.KeycloakDRFMiddleware` or `KeycloakGrapheneMiddleware` to the Django `MIDDLEWARE`
 3. Add `django_keycloak.middleware.KeycloakMiddleware` to the Django `MIDDLEWARE
-3. Change Django `AUTHENTICATION_BACKENDS` to:
+4. Change Django `AUTHENTICATION_BACKENDS` to:
 
     ```json
     AUTHENTICATION_BACKENDS = (
         'django_keycloak.backends.KeycloakAuthenticationBackend',
     )
     ```
-4. Add the following to Django settings:
+5. Add the following to Django settings:
 
     ```json
     # Keycloak
@@ -28,14 +27,18 @@ This package can only be used for projects started from scratch since they overr
         'CLIENT_ID': 'api',
         'CLIENT_SECRET_KEY': '0414b857-8430-4fbb-b86a-62bc398f37ea',
         'CLIENT_ADMIN_ROLE': 'admin',
-        'REALM_ADMIN_ROLE': 'admin'
+        'REALM_ADMIN_ROLE': 'admin',
+        'EXEMPT_URIS': [],
+        'GRAPHQL_ENDPOINT': 'graphql/'
     }
     ```
- 5. Override the Django user model on settings:
+6. Override the Django user model on settings:
  
      ```json
     AUTH_USER_MODEL = "django_keycloak.KeycloakUser"
     ```
+
+7. If using graphene add the `GRAPHQL_ENDPOINT` to settings and ``KeycloakGrapheneMiddleware` to the graphene`MIDDLEWARE`
     
 ## Django Admin
 
