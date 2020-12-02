@@ -48,7 +48,7 @@ createsuperuser`. But first you must create this user on keycloak and set a
 client admin role and realm admin role like the `CLIENT_ADMIN_ROLE` and
 `REALM_ADMIN_ROLE` that were added on settings previously.
 
-## Django Rest Framework (when using `django_keycloak.middleware.KeycloakDRFMiddleware`)
+## Django Rest Framework
 
 In the Django settings the the Rest Framework settings can't have any
 Authorization values (used in other projects). Example:
