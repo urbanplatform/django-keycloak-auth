@@ -3,7 +3,6 @@ import re
 from django.contrib.auth import get_user_model
 from django.http.response import JsonResponse
 from django.utils.deprecation import MiddlewareMixin
-from rest_framework.exceptions import AuthenticationFailed, NotAuthenticated
 
 from django_keycloak.keycloak import Connect
 
@@ -99,21 +98,21 @@ class KeycloakMiddleware(KeycloakMiddlewareMixin, MiddlewareMixin):
 
         if self.has_auth_header(request):
             return JsonResponse(
-                {"detail": NotAuthenticated.default_detail},
-                status=NotAuthenticated.status_code
+                {"detail": "Authentication credentials were not provided."},
+                status=401,
             )
 
         token = self.get_token(request)
         if token is None:
             return JsonResponse(
                 {"detail": "Invalid token structure. Must be 'Bearer <token>'"},
-                status=AuthenticationFailed.status_code
+                status=401,
             )
 
         if not self.keycloak.is_token_active(token):
             return JsonResponse(
                 {"detail": "Invalid or expired token."},
-                status=AuthenticationFailed.status_code
+                status=401,
             )
 
         request = self.append_user_info_to_request(request, token)
