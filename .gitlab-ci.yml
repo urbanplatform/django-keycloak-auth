@@ -1,0 +1,18 @@
+image: python:3.6
+
+stages:
+  -  deploy
+
+before_script:
+  - pip install --upgrade setuptools wheel
+  - pip install twine
+  - python setup.py sdist bdist_wheel
+
+deploy_new_version:
+  stage: deploy
+  when: manual
+  variables:
+    TWINE_USERNAME: "__token__"
+    TWINE_PASSWORD: $PYPI_API_TOKEN
+  script:
+    - twine upload dist/*
