@@ -17,7 +17,6 @@ This package can only be used for projects started from scratch since they overr
 5. Add the following to Django settings:
 
     ```json
-
     KEYCLOAK_CONFIG = {
         'SERVER_URL': 'https://keycloak.staging.ubiwhere.com',
         'INTERNAL_URL': 'https://keycloak.staging.ubiwhere.com',
