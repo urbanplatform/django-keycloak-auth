@@ -55,17 +55,6 @@ class KeycloakGrapheneMiddleware(KeycloakMiddlewareMixin):
 
     def __init__(self):
         self.keycloak = Connect()
-        self._load_error_handler()
-
-    def _load_error_handler(self):
-        """Dynamicly loads error handler from settings"""
-        components = self.keycloak.graphql_error_handler.split('.')
-        separator = '.'
-        path = separator.join(components[0:-1])
-        class_name = components[-1]
-        mod = __import__(path, fromlist=[class_name])
-        klass = getattr(mod, class_name)
-        self.errorHandler = klass()
 
     def resolve(self, next, root, info, **kwargs):
         """
@@ -74,14 +63,14 @@ class KeycloakGrapheneMiddleware(KeycloakMiddlewareMixin):
         request = info.context
 
         if self.has_auth_header(request):
-            return self.errorHandler.resolve_auth_header_not_found(next, root, info, **kwargs)
+            raise Exception("Authorization header missing")
 
         token = self.get_token(request)
         if token is None:
-            return self.errorHandler.resolve_bad_header(next, root, info, **kwargs)
+            raise Exception("Invalid token structure. Must be 'Bearer <token>'")
 
         if not self.keycloak.is_token_active(token):
-            return self.errorHandler.resolve_invalid_token(next, root, info, **kwargs)
+            raise Exception("Invalid or expired token.")
 
         info.context = self.append_user_info_to_request(request, token)
 
