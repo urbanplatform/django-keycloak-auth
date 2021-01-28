@@ -1,4 +1,5 @@
 from django.contrib.auth.models import UserManager
+from django.utils import timezone
 
 from django_keycloak.keycloak import Connect
 
@@ -53,6 +54,7 @@ class KeycloakUserManager(UserManager):
             keycloak_id=user_info.get("sub"),
             is_staff=is_staff,
             is_superuser=is_superuser,
+            date_joined=timezone.now(),
             **kwargs
         )
         user.save(using=self._db)
