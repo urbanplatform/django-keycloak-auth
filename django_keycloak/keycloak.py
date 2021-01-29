@@ -54,6 +54,9 @@ class Connect:
         @param token: request token
         @return: introspected token
         """
+        if hasattr(self, "cached_introspect"):
+            return self.cached_introspect
+
         payload = {
             "token": token,
             "client_id": self.client_id,
@@ -75,7 +78,8 @@ class Connect:
             data=payload,
             headers=headers
         )
-        return response.json()
+        self.cached_introspect = response.json()
+        return self.cached_introspect
 
     def get_token_from_credentials(self, username, password):
         """
