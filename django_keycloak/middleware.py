@@ -11,10 +11,11 @@ class KeycloakMiddlewareMixin:
 
     def append_user_info_to_request(self, request, token):
         """Appends user info to the request"""
-        # Get client/realm roles, scope and user info from access token and
-        # added them to the request
-        user_info = self.keycloak.get_user_info(token)
 
+        if hasattr(request, "remote_user"):
+            return request
+
+        user_info = self.keycloak.get_user_info(token)
         request.remote_user = {
             'client_roles': self.keycloak.client_roles(token),
             'realm_roles': self.keycloak.client_roles(token),
