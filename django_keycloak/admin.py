@@ -2,9 +2,11 @@ from django.conf import settings
 from django.contrib import admin
 from django.utils.html import format_html
 from django.utils.translation import gettext_lazy as _
+from django.contrib.auth import get_user_model
 
-from django_keycloak.models import KeycloakUser
 from django_keycloak.urls import KEYCLOAK_ADMIN_USER_PAGE
+
+User = get_user_model()
 
 
 class UserAdmin(admin.ModelAdmin):
@@ -43,4 +45,4 @@ class UserAdmin(admin.ModelAdmin):
         return False
 
 
-admin.site.register(KeycloakUser, UserAdmin)
+admin.site.register(User, UserAdmin)
