@@ -1,6 +1,5 @@
 from django.contrib.auth.backends import RemoteUserBackend
-
-from django_keycloak.models import KeycloakUser
+from django.contrib.auth import get_user_model
 from django_keycloak.keycloak import Connect
 
 
@@ -9,12 +8,13 @@ class KeycloakAuthenticationBackend(RemoteUserBackend):
     def authenticate(self, request, username=None, password=None):
         keycloak = Connect()
         token = keycloak.get_token_from_credentials(username, password)
+        User = get_user_model()
         if not keycloak.is_token_active(token):
             return
         try:
-            user = KeycloakUser.objects.get(username=username)
-        except KeycloakUser.DoesNotExist:
-            user = KeycloakUser.objects.create_user(username, password)
+            user = User.objects.get(username=username)
+        except User.DoesNotExist:
+            user = User.objects.create_user(username, password)
 
         if keycloak.has_superuser_perm(token):
             user.is_staff = True
@@ -27,8 +27,9 @@ class KeycloakAuthenticationBackend(RemoteUserBackend):
 
         return user
 
-    def get_user(self, username):
+    def get_user(self, user_identifier):
+        User = get_user_model()
         try:
-            return KeycloakUser.objects.get(username=username)
-        except KeycloakUser.DoesNotExist:
-            return
+            return User.objects.get(username=user_identifier)
+        except User.DoesNotExist:
+            return User.objects.get(keycloak_id=user_identifier)
