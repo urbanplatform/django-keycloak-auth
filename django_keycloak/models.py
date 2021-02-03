@@ -1,6 +1,7 @@
 from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin
 from django.db import models
 from django.utils.translation import gettext_lazy as _
+from django_keycloak.keycloak import Connect
 
 from .managers import KeycloakUserManager
 
@@ -41,10 +42,14 @@ class AbstractKeycloakUser(AbstractBaseUser, PermissionsMixin):
 
     @property
     def email(self):
-        if self.cached_user_info is None:
-            self.cached_user_info = self.objects.get_user_info(self.keycloak_id)
-        return self.cached_user_info.get("email")
+        self._confirm_cache()
+        return self._cached_user_info.get("email")
 
     class Meta:
         abstract = True
         swappable = 'AUTH_USER_MODEL'
+
+    def _confirm_cache(self):
+        if not hasattr(self, "_cached_user_info"):
+            keycloak = Connect()
+            self._cached_user_info = keycloak.get_user_info_by_id(self.keycloak_id)
