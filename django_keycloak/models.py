@@ -6,7 +6,7 @@ from django_keycloak.keycloak import Connect
 from .managers import KeycloakUserManager
 
 
-class KeycloakUser(AbstractBaseUser, PermissionsMixin):
+class AbstractKeycloakUser(AbstractBaseUser, PermissionsMixin):
     username = models.CharField(_("username"), unique=True, max_length=20)
     keycloak_id = models.UUIDField(_("keycloak_id"), unique=True, primary_key=True)
     is_staff = models.BooleanField(default=False)
@@ -23,16 +23,15 @@ class KeycloakUser(AbstractBaseUser, PermissionsMixin):
         self._confirm_cache()
         return self._cached_user_info.get("email")
 
-    class Meta(AbstractBaseUser.Meta):
-        swappable = 'AUTH_USER_MODEL'
-
     def _confirm_cache(self):
         if not hasattr(self, "_cached_user_info"):
             keycloak = Connect()
             self._cached_user_info = keycloak.get_user_info_by_id(self.keycloak_id)
 
-
-class AbstractKeycloakUser(KeycloakUser):
-    class Meta:
+    class Meta(AbstractBaseUser.Meta):
         abstract = True
+
+
+class KeycloakUser(AbstractKeycloakUser):
+    class Meta(AbstractKeycloakUser.Meta):
         swappable = 'AUTH_USER_MODEL'
