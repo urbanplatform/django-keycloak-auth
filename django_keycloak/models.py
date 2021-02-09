@@ -7,8 +7,8 @@ from .managers import KeycloakUserManager
 
 
 class AbstractKeycloakUser(AbstractBaseUser, PermissionsMixin):
+    id = models.UUIDField(_("keycloak_id"), unique=True, primary_key=True)
     username = models.CharField(_("username"), unique=True, max_length=20)
-    keycloak_id = models.UUIDField(_("keycloak_id"), unique=True, primary_key=True)
     is_staff = models.BooleanField(default=False)
     is_superuser = models.BooleanField(default=False)
     is_active = models.BooleanField(default=True)
@@ -26,7 +26,7 @@ class AbstractKeycloakUser(AbstractBaseUser, PermissionsMixin):
     def _confirm_cache(self):
         if not hasattr(self, "_cached_user_info"):
             keycloak = Connect()
-            self._cached_user_info = keycloak.get_user_info_by_id(self.keycloak_id)
+            self._cached_user_info = keycloak.get_user_info_by_id(self.id)
 
     class Meta(AbstractBaseUser.Meta):
         abstract = True

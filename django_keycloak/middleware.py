@@ -31,7 +31,7 @@ class KeycloakMiddlewareMixin:
         # get user or create from token
         User = get_user_model()
         try:
-            request.user = User.objects.get(keycloak_id=self.keycloak.get_user_id(token))
+            request.user = User.objects.get(id=self.keycloak.get_user_id(token))
         except User.DoesNotExist:
             request.user = User.objects.create_from_token(token)
 

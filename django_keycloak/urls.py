@@ -7,5 +7,5 @@ KEYCLOAK_GET_USER_BY_ID = "{}/auth/admin/realms/{}/users/{}"
 
 # ADMIN CONSOLE
 KEYCLOAK_ADMIN_USER_PAGE = (
-    "{host}/auth/admin/master/console/#/realms/{realm}/users/{keycloak_id}"
+    "{host}/auth/admin/master/console/#/realms/{realm}/users/{id}"
 )

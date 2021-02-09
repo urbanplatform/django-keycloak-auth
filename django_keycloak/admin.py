@@ -11,8 +11,8 @@ User = get_user_model()
 
 class UserAdmin(admin.ModelAdmin):
     list_display = (
+        "id",
         "username",
-        "keycloak_id",
         "is_staff",
         "is_superuser",
     )
@@ -27,10 +27,9 @@ class UserAdmin(admin.ModelAdmin):
 
     def keycloak_link(self, obj):
         config = settings.KEYCLOAK_CONFIG
-        label = obj.keycloak_id
+        label = obj.id
         link = KEYCLOAK_ADMIN_USER_PAGE.format(
-            host=config.get("SERVER_URL"), realm=config.get("REALM"), keycloak_id=label
-        )
+            host=config.get("SERVER_URL"), realm=config.get("REALM"), id=label)
         return format_html('<a href="{link}" target="_blank">{label}</a>', link=link, label=label)
 
     keycloak_link.short_description = _("keycloak link")

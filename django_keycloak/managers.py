@@ -50,8 +50,8 @@ class KeycloakUserManager(UserManager):
             is_superuser = True
 
         user = self.model(
+            id=user_info.get("sub"),
             username=user_info.get("username"),
-            keycloak_id=user_info.get("sub"),
             is_staff=is_staff,
             is_superuser=is_superuser,
             date_joined=timezone.now(),
