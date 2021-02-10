@@ -37,7 +37,7 @@ class KeycloakMiddlewareMixin:
 
         return request
 
-    def has_auth_header(self, request):
+    def is_auth_header_missing(self, request):
         """Check if exists an authentication header in the HTTP request"""
         return 'HTTP_AUTHORIZATION' not in request.META
 
@@ -63,8 +63,9 @@ class KeycloakGrapheneMiddleware(KeycloakMiddlewareMixin):
         """
         request = info.context
 
-        if self.has_auth_header(request):
-            raise Exception("Authorization header missing")
+        if self.is_auth_header_missing(request):
+            """Append anonymous user and continue"""
+            return next(root, info, **kwargs)
 
         token = self.get_token(request)
         if token is None:
@@ -97,7 +98,7 @@ class KeycloakMiddleware(KeycloakMiddlewareMixin, MiddlewareMixin):
         if self.pass_auth(request) or self.is_graphql_endpoint(request):
             return self.get_response(request)
 
-        if self.has_auth_header(request):
+        if self.is_auth_header_missing(request):
             return JsonResponse(
                 {"detail": "Authentication credentials were not provided."},
                 status=401,
