@@ -6,7 +6,9 @@ from django.conf import settings
 from django_keycloak.urls import (KEYCLOAK_GET_TOKEN, KEYCLOAK_GET_USER_BY_ID,
                                   KEYCLOAK_GET_USERS,
                                   KEYCLOAK_INTROSPECT_TOKEN,
-                                  KEYCLOAK_USER_INFO)
+                                  KEYCLOAK_USER_INFO,
+                                  KEYCLOAK_UPDATE_USER,
+                                  )
 
 
 class Connect:
@@ -238,6 +240,36 @@ class Connect:
             "GET",
             KEYCLOAK_GET_USER_BY_ID.format(server_url, self.realm, user_id),
             headers=headers,
+        )
+
+        return response.json()
+
+    def update_user(self, user_id, **values):
+        """
+        Update user with values
+        """
+        token = self.get_token()
+        headers = {
+            "Content-Type": "application/json",
+            "Authorization": "Bearer {}".format(token),
+        }
+
+        server_url = self.server_url
+        if self.internal_url:
+            server_url = self.internal_url
+            headers["HOST"] = urlparse(self.server_url).netloc
+
+        current_user = self.get_user_info_by_id(user_id)
+        data = {
+            **current_user,
+            **values,
+        }
+
+        url = KEYCLOAK_UPDATE_USER.format(server_url, self.realm, user_id)
+        response = requests.put(
+            url,
+            headers=headers,
+            data=data,
         )
 
         return response.json()
