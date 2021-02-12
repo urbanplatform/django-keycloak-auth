@@ -23,6 +23,20 @@ class AbstractKeycloakUser(AbstractBaseUser, PermissionsMixin):
         self._confirm_cache()
         return self._cached_user_info.get("email")
 
+    @property
+    def first_name(self):
+        self._confirm_cache()
+        return self._cached_user_info.get("firstName")
+
+    @property
+    def last_name(self):
+        self._confirm_cache()
+        return self._cached_user_info.get("lastName")
+
+    @property
+    def full_name(self):
+        return f"{self.first_name} {self.last_name}"
+
     def _confirm_cache(self):
         if not hasattr(self, "_cached_user_info"):
             keycloak = Connect()
@@ -30,6 +44,17 @@ class AbstractKeycloakUser(AbstractBaseUser, PermissionsMixin):
 
     class Meta(AbstractBaseUser.Meta):
         abstract = True
+
+    def update_keycloak(self, email=None, first_name=None, last_name=None):
+        keycloak = Connect()
+        values = {}
+        if email is not None:
+            values["email"] = email
+        if first_name is not None:
+            values["firstName"] = first_name
+        if last_name is not None:
+            values["lastName"] = last_name
+        return keycloak.update_user(self.id, **values)
 
 
 class KeycloakUser(AbstractKeycloakUser):

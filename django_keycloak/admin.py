@@ -19,11 +19,14 @@ class UserAdmin(admin.ModelAdmin):
     fields = [
         "username",
         "keycloak_link",
+        "email",
+        "first_name",
+        "last_name",
         "is_staff",
         "is_superuser",
         "is_active",
     ]
-    readonly_fields = ["keycloak_link"]
+    readonly_fields = ["keycloak_link", "email", "first_name", "last_name"]
 
     def keycloak_link(self, obj):
         config = settings.KEYCLOAK_CONFIG
