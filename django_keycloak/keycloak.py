@@ -266,10 +266,6 @@ class Connect:
         }
 
         url = KEYCLOAK_UPDATE_USER.format(server_url, self.realm, user_id)
-        response = requests.put(
-            url,
-            headers=headers,
-            data=data,
-        )
-
-        return response.json()
+        requests.put(url, headers=headers, json=data)
+        # No body is returned from update user enpoint (returns status 204)
+        return data
