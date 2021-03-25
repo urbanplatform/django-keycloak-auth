@@ -31,13 +31,13 @@ class KeycloakMiddlewareMixin:
         # get user or create from token
         User = get_user_model()
         try:
-            request.user = User.objects.get(keycloak_id=self.keycloak.get_user_id(token))
+            request.user = User.objects.get(id=self.keycloak.get_user_id(token))
         except User.DoesNotExist:
             request.user = User.objects.create_from_token(token)
 
         return request
 
-    def has_auth_header(self, request):
+    def is_auth_header_missing(self, request):
         """Check if exists an authentication header in the HTTP request"""
         return 'HTTP_AUTHORIZATION' not in request.META
 
@@ -63,8 +63,9 @@ class KeycloakGrapheneMiddleware(KeycloakMiddlewareMixin):
         """
         request = info.context
 
-        if self.has_auth_header(request):
-            raise Exception("Authorization header missing")
+        if self.is_auth_header_missing(request):
+            """Append anonymous user and continue"""
+            return next(root, info, **kwargs)
 
         token = self.get_token(request)
         if token is None:
@@ -94,29 +95,30 @@ class KeycloakMiddleware(KeycloakMiddlewareMixin, MiddlewareMixin):
         To be executed before the view each request
         """
         # Checks URIs that doesn't need authentication
-        if self.pass_auth(request) or self.is_graphql_endpoint(request):
-            return self.get_response(request)
+        # if self.pass_auth(request) or self.is_graphql_endpoint(request):
+        #     return self.get_response(request)
 
-        if self.has_auth_header(request):
-            return JsonResponse(
-                {"detail": "Authentication credentials were not provided."},
-                status=401,
-            )
+        # if self.is_auth_header_missing(request):
+        #     return JsonResponse(
+        #         {"detail": "Authentication credentials were not provided."},
+        #         status=401,
+        #     )
 
-        token = self.get_token(request)
-        if token is None:
-            return JsonResponse(
-                {"detail": "Invalid token structure. Must be 'Bearer <token>'"},
-                status=401,
-            )
+        if not self.is_auth_header_missing(request):
+            token = self.get_token(request)
+            if token is None:
+                return JsonResponse(
+                    {"detail": "Invalid token structure. Must be 'Bearer <token>'"},
+                    status=401,
+                )
 
-        if not self.keycloak.is_token_active(token):
-            return JsonResponse(
-                {"detail": "Invalid or expired token."},
-                status=401,
-            )
+            if not self.keycloak.is_token_active(token):
+                return JsonResponse(
+                    {"detail": "Invalid or expired token."},
+                    status=401,
+                )
 
-        request = self.append_user_info_to_request(request, token)
+            request = self.append_user_info_to_request(request, token)
         return self.get_response(request)
 
     def pass_auth(self, request):
