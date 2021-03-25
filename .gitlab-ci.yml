@@ -1,4 +1,4 @@
-image: python:3.6
+image: registry.cbr.ubiwhere.com/alpine:3.13-python3.8.7
 
 stages:
   -  deploy
