@@ -60,3 +60,7 @@ class AbstractKeycloakUser(AbstractBaseUser, PermissionsMixin):
 class KeycloakUser(AbstractKeycloakUser):
     class Meta(AbstractKeycloakUser.Meta):
         swappable = 'AUTH_USER_MODEL'
+
+    class Meta:
+        verbose_name = _('User')
+        verbose_name_plural = _('Users')
