@@ -1,4 +1,4 @@
-image: python:3.6
+image: registry.cbr.ubiwhere.com/python:3.8.7-debian10
 
 stages:
   -  deploy
