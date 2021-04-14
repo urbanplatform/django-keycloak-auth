@@ -13,7 +13,7 @@ class KeycloakUserManager(UserManager):
         """
         Creates a local user if the user exists on keycloak
         """
-        token = self.keycloak.get_token_from_credentials(username, password)
+        token = self.keycloak.get_token_from_credentials(username, password).get("access_token")
         if token is None:
             raise ValueError("Wrong credentials")
         user = self.create_from_token(token, password)
@@ -23,7 +23,7 @@ class KeycloakUserManager(UserManager):
         """
         Creates a local super user if the user exists on keycloak and is superuser
         """
-        token = self.keycloak.get_token_from_credentials(username, password)
+        token = self.keycloak.get_token_from_credentials(username, password).get("access_token")
         if token is None:
             raise ValueError("Wrong credentials")
         if not self.keycloak.has_superuser_perm(token):

@@ -7,7 +7,7 @@ class KeycloakAuthenticationBackend(RemoteUserBackend):
 
     def authenticate(self, request, username=None, password=None):
         keycloak = Connect()
-        token = keycloak.get_token_from_credentials(username, password)
+        token = keycloak.get_token_from_credentials(username, password).get("access_token")
         User = get_user_model()
         if not keycloak.is_token_active(token):
             return
