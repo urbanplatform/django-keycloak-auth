@@ -17,12 +17,12 @@ class Connect:
     """
 
     def __init__(
-        self,
-        server_url=None,
-        realm=None,
-        client_id=None,
-        client_secret_key=None,
-        internal_url=None,
+            self,
+            server_url=None,
+            realm=None,
+            client_id=None,
+            client_secret_key=None,
+            internal_url=None,
     ):
         # Load configuration from settings + args
         self.config = settings.KEYCLOAK_CONFIG
@@ -113,7 +113,34 @@ class Connect:
             data=payload,
             headers=headers,
         )
-        return response.json().get("access_token")
+        return response.json()
+
+    def refresh_token_from_credentials(self, refresh_token):
+        """
+        Refresh token
+        """
+        payload = {
+            "grant_type": "refresh_token",
+            "client_id": self.client_id,
+            "client_secret": self.client_secret_key,
+            "refresh_token": refresh_token,
+        }
+        headers = {
+            "Content-Type": "application/x-www-form-urlencoded",
+        }
+
+        server_url = self.server_url
+        if self.internal_url:
+            server_url = self.internal_url
+            headers["HOST"] = urlparse(self.server_url).netloc
+
+        response = requests.request(
+            "POST",
+            KEYCLOAK_GET_TOKEN.format(server_url, self.realm),
+            data=payload,
+            headers=headers,
+        )
+        return response.json()
 
     def get_token(self):
         """
