@@ -59,3 +59,38 @@ class KeycloakUserManager(UserManager):
         )
         user.save(using=self._db)
         return user
+
+    def get_by_keycloak_id(self, keycloak_id):
+        return self.get(id=keycloak_id)
+
+
+class KeycloakUserManagerAutoId(KeycloakUserManager):
+    def create_from_token(self, token, password=None, **kwargs):
+        """
+        Create a new user from a valid token
+        """
+        if not self.keycloak.is_token_active(token):
+            raise ValueError("Invalid token")
+
+        user_info = self.keycloak.introspect(token)
+
+        # set admin permissions if user is admin
+        is_staff = False
+        is_superuser = False
+        if self.keycloak.has_superuser_perm(token):
+            is_staff = True
+            is_superuser = True
+
+        user = self.model(
+            keycloak_id=user_info.get("sub"),
+            username=user_info.get("username"),
+            is_staff=is_staff,
+            is_superuser=is_superuser,
+            date_joined=timezone.now(),
+            **kwargs
+        )
+        user.save(using=self._db)
+        return user
+
+    def get_by_keycloak_id(self, keycloak_id):
+        return self.get(keycloak_id=keycloak_id)
