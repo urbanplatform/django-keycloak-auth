@@ -94,9 +94,9 @@ class KeycloakMiddleware(KeycloakMiddlewareMixin, MiddlewareMixin):
         """
         To be executed before the view each request
         """
-        # Checks URIs that doesn't need authentication
-        # if self.pass_auth(request) or self.is_graphql_endpoint(request):
-        #     return self.get_response(request)
+        # Skip auth for gql endpoint (it is done in KeycloakGrapheneMiddleware)
+        if self.is_graphql_endpoint(request):
+            return self.get_response(request)
 
         # if self.is_auth_header_missing(request):
         #     return JsonResponse(
