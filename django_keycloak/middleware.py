@@ -31,7 +31,7 @@ class KeycloakMiddlewareMixin:
         # get user or create from token
         User = get_user_model()
         try:
-            request.user = User.objects.get(id=self.keycloak.get_user_id(token))
+            request.user = User.objects.get_by_keycloak_id(self.keycloak.get_user_id(token))
         except User.DoesNotExist:
             request.user = User.objects.create_from_token(token)
 
@@ -94,9 +94,9 @@ class KeycloakMiddleware(KeycloakMiddlewareMixin, MiddlewareMixin):
         """
         To be executed before the view each request
         """
-        # Checks URIs that doesn't need authentication
-        # if self.pass_auth(request) or self.is_graphql_endpoint(request):
-        #     return self.get_response(request)
+        # Skip auth for gql endpoint (it is done in KeycloakGrapheneMiddleware)
+        if self.is_graphql_endpoint(request):
+            return self.get_response(request)
 
         # if self.is_auth_header_missing(request):
         #     return JsonResponse(
