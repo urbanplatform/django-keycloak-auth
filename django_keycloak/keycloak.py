@@ -60,7 +60,8 @@ class Connect:
         @return: introspected token
         """
         if hasattr(self, "cached_introspect"):
-            return self.cached_introspect
+            if self.cached_token == token:
+                return self.cached_introspect
 
         payload = {
             "token": token,
@@ -83,6 +84,7 @@ class Connect:
             data=payload,
             headers=headers,
         )
+        self.cached_token = token
         self.cached_introspect = response.json()
         return self.cached_introspect
 
