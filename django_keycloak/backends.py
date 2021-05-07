@@ -32,4 +32,7 @@ class KeycloakAuthenticationBackend(RemoteUserBackend):
         try:
             return User.objects.get(username=user_identifier)
         except User.DoesNotExist:
-            return User.objects.get(id=user_identifier)
+            try:
+                return User.objects.get(id=user_identifier)
+            except User.DoesNotExist:
+                return None
