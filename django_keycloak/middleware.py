@@ -18,7 +18,7 @@ class KeycloakMiddlewareMixin:
         user_info = self.keycloak.get_user_info(token)
         request.remote_user = {
             'client_roles': self.keycloak.client_roles(token),
-            'realm_roles': self.keycloak.client_roles(token),
+            'realm_roles': self.keycloak.realm_roles(token),
             'client_scope': self.keycloak.client_scope(token),
             'name': user_info.get('name'),
             'given_name': user_info.get('given_name'),
