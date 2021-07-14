@@ -1,8 +1,9 @@
-from celery import task
+from celery import Celery
 from django.core.management import call_command
 
 
-@task(queue='sync_users')
+app = Celery()
+@app.task(queue='sync_users')
 def sync_users_with_keycloak():
     """
     Users synchronization task
