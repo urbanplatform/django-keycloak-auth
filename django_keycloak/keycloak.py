@@ -3,12 +3,17 @@ from urllib.parse import urlparse
 import requests
 from django.conf import settings
 
-from django_keycloak.urls import (KEYCLOAK_GET_TOKEN, KEYCLOAK_GET_USER_BY_ID,
-                                  KEYCLOAK_GET_USERS,
-                                  KEYCLOAK_INTROSPECT_TOKEN,
-                                  KEYCLOAK_USER_INFO,
-                                  KEYCLOAK_UPDATE_USER,
-                                  )
+from .decorators import keycloak_api_error_handler
+from .urls import (
+    KEYCLOAK_GET_TOKEN,
+    KEYCLOAK_GET_USER_BY_ID,
+    KEYCLOAK_GET_USERS,
+    KEYCLOAK_INTROSPECT_TOKEN,
+    KEYCLOAK_USER_INFO,
+    KEYCLOAK_UPDATE_USER,
+    KEYCLOAK_CREATE_USER,
+    KEYCLOAK_SEND_ACTIONS_EMAIL,
+)
 
 
 class Connect:
@@ -17,12 +22,12 @@ class Connect:
     """
 
     def __init__(
-            self,
-            server_url=None,
-            realm=None,
-            client_id=None,
-            client_secret_key=None,
-            internal_url=None,
+        self,
+        server_url=None,
+        realm=None,
+        client_id=None,
+        client_secret_key=None,
+        internal_url=None,
     ):
         # Load configuration from settings + args
         self.config = settings.KEYCLOAK_CONFIG
@@ -172,11 +177,12 @@ class Connect:
         )
         return response.json().get("access_token")
 
-    def get_users(self, token):
+    def get_users(self, **params):
         """
         Get users for realm
         @return:
         """
+        token = self.get_token()
         headers = {
             "Content-Type": "application/json",
             "Authorization": "Bearer {}".format(token),
@@ -187,7 +193,10 @@ class Connect:
             headers["HOST"] = urlparse(self.server_url).netloc
 
         response = requests.request(
-            "GET", KEYCLOAK_GET_USERS.format(server_url, self.realm), headers=headers
+            "GET",
+            KEYCLOAK_GET_USERS.format(server_url, self.realm),
+            headers=headers,
+            params=params,
         )
         return response.json()
 
@@ -273,6 +282,8 @@ class Connect:
 
         return response.json()
 
+
+    @keycloak_api_error_handler
     def update_user(self, user_id, **values):
         """
         Update user with values
@@ -295,6 +306,24 @@ class Connect:
         }
 
         url = KEYCLOAK_UPDATE_USER.format(server_url, self.realm, user_id)
-        requests.put(url, headers=headers, json=data)
-        # No body is returned from update user enpoint (returns status 204)
+        res = requests.put(url, headers=headers, json=data)
+        res.raise_for_status()
         return data
+
+
+    @keycloak_api_error_handler
+    def create_user(self, **values):
+        token = self.get_token()
+        headers = {
+            "Content-Type": "application/json",
+            "Authorization": "Bearer {}".format(token),
+        }
+
+        server_url = self.server_url
+        if self.internal_url:
+            server_url = self.internal_url
+            headers["HOST"] = urlparse(self.server_url).netloc
+
+        url = KEYCLOAK_CREATE_USER.format(server_url, self.realm)
+        res = requests.post(url, headers=headers, json=values)
+        res.raise_for_status()
