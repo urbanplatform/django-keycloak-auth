@@ -4,6 +4,11 @@ from django.utils.translation import gettext_lazy as _
 from django_keycloak.keycloak import Connect
 
 from .managers import KeycloakUserManager, KeycloakUserManagerAutoId
+from .enums import (
+    USER_ACTION__VERIFY_EMAIL,
+    USER_ACTION__UPDATE_PROFILE,
+    USER_ACTION__UPDATE_PASSWORD
+)
 
 
 class AbstractKeycloakUser(AbstractBaseUser, PermissionsMixin):
@@ -63,9 +68,9 @@ class AbstractKeycloakUser(AbstractBaseUser, PermissionsMixin):
 
 class KeycloakUser(AbstractKeycloakUser):
     class Meta:
-        swappable = 'AUTH_USER_MODEL'
-        verbose_name = _('User')
-        verbose_name_plural = _('Users')
+        swappable = "AUTH_USER_MODEL"
+        verbose_name = _("User")
+        verbose_name_plural = _("Users")
 
 
 class AbstractKeycloakUserAutoId(AbstractKeycloakUser):
@@ -78,6 +83,7 @@ class AbstractKeycloakUserAutoId(AbstractKeycloakUser):
           all relationships, You should reset the db or edit all relationships
           manually
     """
+
     id = models.AutoField(primary_key=True)
     keycloak_id = models.UUIDField(_("keycloak_id"), unique=True)
 
