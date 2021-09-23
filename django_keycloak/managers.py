@@ -63,6 +63,26 @@ class KeycloakUserManager(UserManager):
     def get_by_keycloak_id(self, keycloak_id):
         return self.get(id=keycloak_id)
 
+    def create_keycloak_user(
+            self, username, email=None, first_name=None, last_name=None, enabled=True, actions=None
+    ):
+        keycloak = Connect()
+        values = {"username": username, "enabled": enabled}
+        if email is not None:
+            values["email"] = email
+        if first_name is not None:
+            values["firstName"] = first_name
+        if last_name is not None:
+            values["lastName"] = last_name
+        if actions is not None:
+            values["requiredActions"] = actions
+        keycloak.create_user(**values)
+        keycloak_user_rep = keycloak.get_users(username=username)[0]
+        self.create(
+            id=keycloak_user_rep.get('id'),
+            username=keycloak_user_rep.get('username'),
+        )
+
 
 class KeycloakUserManagerAutoId(KeycloakUserManager):
     def create_from_token(self, token, password=None, **kwargs):
@@ -94,3 +114,25 @@ class KeycloakUserManagerAutoId(KeycloakUserManager):
 
     def get_by_keycloak_id(self, keycloak_id):
         return self.get(keycloak_id=keycloak_id)
+
+    def create_keycloak_user(
+            self, username, email=None, first_name=None, last_name=None, enabled=True, actions=None
+    ):
+        keycloak = Connect()
+        values = {"username": username, "enabled": enabled}
+        if email is not None:
+            values["email"] = email
+        if first_name is not None:
+            values["firstName"] = first_name
+        if last_name is not None:
+            values["lastName"] = last_name
+        if actions is not None:
+            values["requiredActions"] = actions
+        keycloak.create_user(**values)
+        keycloak_user_rep = keycloak.get_users(username=username)[0]
+
+        self.create(
+            username=keycloak_user_rep.get('username'),
+            keycloak_id=keycloak_user_rep.get('id'),
+        )
+

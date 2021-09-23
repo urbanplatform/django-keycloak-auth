@@ -13,8 +13,7 @@ class Command(BaseCommand):
         keycloak = Connect()
         User = get_user_model()
 
-        remote_users = set([user.get('id') for user in keycloak.get_users(
-            keycloak.get_token())])
+        remote_users = set([user.get('id') for user in keycloak.get_users()])
         local_users = set(str(_u.id) for _u in User.objects.all())
 
         users_to_remove = local_users.difference(remote_users)
