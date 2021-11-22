@@ -28,6 +28,8 @@ class UserAdmin(admin.ModelAdmin):
     ]
     readonly_fields = ["keycloak_link", "email", "first_name", "last_name"]
 
+    search_fields = ['username', 'email']
+
     def keycloak_link(self, obj):
         config = settings.KEYCLOAK_CONFIG
         label = obj.id
