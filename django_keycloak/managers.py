@@ -9,6 +9,21 @@ class KeycloakUserManager(UserManager):
         self.keycloak = Connect()
         super().__init__(*args, **kwargs)
 
+    def _create_user_on_keycloak(
+            self, username, email, first_name=None, last_name=None, enabled=True, actions=None
+    ):
+        """Creates user on keycloak server, No state is changed on local db"""
+        keycloak = Connect()
+        values = {"username": username, "email": email, "enabled": enabled}
+        if first_name is not None:
+            values["firstName"] = first_name
+        if last_name is not None:
+            values["lastName"] = last_name
+        if actions is not None:
+            values["requiredActions"] = actions
+        keycloak.create_user(**values)
+        return keycloak.get_users(username=username)[0]
+
     def create_user(self, username, password=None, **kwargs):
         """
         Creates a local user if the user exists on keycloak
@@ -63,24 +78,12 @@ class KeycloakUserManager(UserManager):
     def get_by_keycloak_id(self, keycloak_id):
         return self.get(id=keycloak_id)
 
-    def create_keycloak_user(
-            self, username, email=None, first_name=None, last_name=None, enabled=True, actions=None
-    ):
-        keycloak = Connect()
-        values = {"username": username, "enabled": enabled}
-        if email is not None:
-            values["email"] = email
-        if first_name is not None:
-            values["firstName"] = first_name
-        if last_name is not None:
-            values["lastName"] = last_name
-        if actions is not None:
-            values["requiredActions"] = actions
-        keycloak.create_user(**values)
-        keycloak_user_rep = keycloak.get_users(username=username)[0]
+
+    def create_keycloak_user(self,  *args, **kwargs):
+        keycloak_user = self._create_user_on_keycloak(*args, **kwargs)
         self.create(
-            id=keycloak_user_rep.get('id'),
-            username=keycloak_user_rep.get('username'),
+            id=keycloak_user.get('id'),
+            username=keycloak_user.get('username'),
         )
 
 
@@ -115,24 +118,10 @@ class KeycloakUserManagerAutoId(KeycloakUserManager):
     def get_by_keycloak_id(self, keycloak_id):
         return self.get(keycloak_id=keycloak_id)
 
-    def create_keycloak_user(
-            self, username, email=None, first_name=None, last_name=None, enabled=True, actions=None
-    ):
-        keycloak = Connect()
-        values = {"username": username, "enabled": enabled}
-        if email is not None:
-            values["email"] = email
-        if first_name is not None:
-            values["firstName"] = first_name
-        if last_name is not None:
-            values["lastName"] = last_name
-        if actions is not None:
-            values["requiredActions"] = actions
-        keycloak.create_user(**values)
-        keycloak_user_rep = keycloak.get_users(username=username)[0]
-
+    def create_keycloak_user(self, *args, **kwargs):
+        keycloak_user = self._create_user_on_keycloak(*args, **kwargs)
         self.create(
-            username=keycloak_user_rep.get('username'),
-            keycloak_id=keycloak_user_rep.get('id'),
+            username=keycloak_user.get('username'),
+            keycloak_id=keycloak_user.get('id'),
         )
 
