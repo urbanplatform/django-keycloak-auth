@@ -30,7 +30,10 @@ class Connect:
         internal_url=None,
     ):
         # Load configuration from settings + args
-        self.config = settings.KEYCLOAK_CONFIG
+        try:
+            self.config = settings.KEYCLOAK_CONFIG
+        except AttributeError:
+            raise Exception("Missing KEYCLOAK_CONFIG on settings file.")
         try:
             self.server_url = server_url or self.config.get("SERVER_URL")
             self.realm = realm or self.config.get("REALM")
@@ -282,7 +285,6 @@ class Connect:
 
         return response.json()
 
-
     @keycloak_api_error_handler
     def update_user(self, user_id, **values):
         """
@@ -309,7 +311,6 @@ class Connect:
         res = requests.put(url, headers=headers, json=data)
         res.raise_for_status()
         return data
-
 
     @keycloak_api_error_handler
     def create_user(self, **values):

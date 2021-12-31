@@ -8,13 +8,14 @@ class KeycloakAuthenticationBackend(RemoteUserBackend):
     def authenticate(self, request, username=None, password=None):
         keycloak = Connect()
         token = keycloak.get_token_from_credentials(username, password).get("access_token")
-        User = get_user_model()
+        user = get_user_model()
         if not keycloak.is_token_active(token):
             return
         try:
-            user = User.objects.get(username=username)
-        except User.DoesNotExist:
-            user = User.objects.create_user(username, password)
+            user = user.objects.get(username=username)
+            # TODO: Update user info if already exists
+        except user.DoesNotExist:
+            user = user.objects.create_user(username, password)
 
         if keycloak.has_superuser_perm(token):
             user.is_staff = True
@@ -28,11 +29,11 @@ class KeycloakAuthenticationBackend(RemoteUserBackend):
         return user
 
     def get_user(self, user_identifier):
-        User = get_user_model()
+        user = get_user_model()
         try:
-            return User.objects.get(username=user_identifier)
-        except User.DoesNotExist:
+            return user.objects.get(username=user_identifier)
+        except user.DoesNotExist:
             try:
-                return User.objects.get(id=user_identifier)
-            except User.DoesNotExist:
+                return user.objects.get(id=user_identifier)
+            except user.DoesNotExist:
                 return None

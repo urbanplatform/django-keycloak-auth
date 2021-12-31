@@ -1,14 +1,9 @@
 from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin
 from django.db import models
 from django.utils.translation import gettext_lazy as _
-from django_keycloak.keycloak import Connect
 
+from django_keycloak.keycloak import Connect
 from .managers import KeycloakUserManager, KeycloakUserManagerAutoId
-from .enums import (
-    USER_ACTION__VERIFY_EMAIL,
-    USER_ACTION__UPDATE_PROFILE,
-    USER_ACTION__UPDATE_PASSWORD
-)
 
 
 class AbstractKeycloakUser(AbstractBaseUser, PermissionsMixin):
@@ -27,20 +22,20 @@ class AbstractKeycloakUser(AbstractBaseUser, PermissionsMixin):
     def keycloak_identifier(self):
         return self.id
 
-    @property
-    def email(self):
-        self._confirm_cache()
-        return self._cached_user_info.get("email")
-
-    @property
-    def first_name(self):
-        self._confirm_cache()
-        return self._cached_user_info.get("firstName")
-
-    @property
-    def last_name(self):
-        self._confirm_cache()
-        return self._cached_user_info.get("lastName")
+    # @property
+    # def email(self):
+    #     self._confirm_cache()
+    #     return self._cached_user_info.get("email")
+    #
+    # @property
+    # def first_name(self):
+    #     self._confirm_cache()
+    #     return self._cached_user_info.get("firstName")
+    #
+    # @property
+    # def last_name(self):
+    #     self._confirm_cache()
+    #     return self._cached_user_info.get("lastName")
 
     @property
     def full_name(self):
@@ -66,6 +61,7 @@ class AbstractKeycloakUser(AbstractBaseUser, PermissionsMixin):
         return keycloak.update_user(self.keycloak_identifier, **values)
 
 
+# Here just for compatibility issues
 class KeycloakUser(AbstractKeycloakUser):
     class Meta:
         swappable = "AUTH_USER_MODEL"
@@ -86,6 +82,9 @@ class AbstractKeycloakUserAutoId(AbstractKeycloakUser):
 
     id = models.AutoField(primary_key=True)
     keycloak_id = models.UUIDField(_("keycloak_id"), unique=True)
+    first_name = models.CharField(_('first name'), max_length=150, blank=True)
+    last_name = models.CharField(_('last name'), max_length=150, blank=True)
+    email = models.EmailField(_('email address'), blank=True)
 
     objects = KeycloakUserManagerAutoId()
 
@@ -100,3 +99,10 @@ class AbstractKeycloakUserAutoId(AbstractKeycloakUser):
 
     class Meta:
         abstract = True
+
+
+class KeycloakUserAutoId(AbstractKeycloakUserAutoId):
+    class Meta:
+        swappable = "AUTH_USER_MODEL"
+        verbose_name = _("User")
+        verbose_name_plural = _("Users")
