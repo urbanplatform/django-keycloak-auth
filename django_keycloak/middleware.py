@@ -29,18 +29,20 @@ class KeycloakMiddlewareMixin:
         }
 
         # get user or create from token
-        User = get_user_model()
+        user = get_user_model()
         try:
-            request.user = User.objects.get_by_keycloak_id(self.keycloak.get_user_id(token))
-        except User.DoesNotExist:
-            request.user = User.objects.create_from_token(token)
+            request.user = user.objects.get_by_keycloak_id(self.keycloak.get_user_id(token))
+        except user.DoesNotExist:
+            request.user = user.objects.create_from_token(token)
 
         return request
 
-    def is_auth_header_missing(self, request):
+    @staticmethod
+    def is_auth_header_missing(request):
         """Check if exists an authentication header in the HTTP request"""
         return 'HTTP_AUTHORIZATION' not in request.META
 
+    @staticmethod
     def get_token(self, request):
         """Get the token from the HTTP request"""
         auth_header = request.META.get('HTTP_AUTHORIZATION').split()

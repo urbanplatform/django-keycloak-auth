@@ -67,6 +67,9 @@ class KeycloakUserManager(UserManager):
         user = self.model(
             id=user_info.get("sub"),
             username=user_info.get("username"),
+            first_name=user_info.get("given_name"),
+            last_name=user_info.get("family_ame"),
+            email=user_info.get("email"),
             is_staff=is_staff,
             is_superuser=is_superuser,
             date_joined=timezone.now(),
@@ -107,6 +110,9 @@ class KeycloakUserManagerAutoId(KeycloakUserManager):
         user = self.model(
             keycloak_id=user_info.get("sub"),
             username=user_info.get("username"),
+            first_name=user_info.get("given_name"),
+            last_name=user_info.get("family_name"),
+            email=user_info.get("email"),
             is_staff=is_staff,
             is_superuser=is_superuser,
             date_joined=timezone.now(),
@@ -124,4 +130,3 @@ class KeycloakUserManagerAutoId(KeycloakUserManager):
             username=keycloak_user.get('username'),
             keycloak_id=keycloak_user.get('id'),
         )
-
