@@ -43,7 +43,7 @@ class KeycloakMiddlewareMixin:
         return 'HTTP_AUTHORIZATION' not in request.META
 
     @staticmethod
-    def get_token(self, request):
+    def get_token(request):
         """Get the token from the HTTP request"""
         auth_header = request.META.get('HTTP_AUTHORIZATION').split()
         if len(auth_header) == 2:
@@ -99,12 +99,6 @@ class KeycloakMiddleware(KeycloakMiddlewareMixin, MiddlewareMixin):
         # Skip auth for gql endpoint (it is done in KeycloakGrapheneMiddleware)
         if self.is_graphql_endpoint(request):
             return self.get_response(request)
-
-        # if self.is_auth_header_missing(request):
-        #     return JsonResponse(
-        #         {"detail": "Authentication credentials were not provided."},
-        #         status=401,
-        #     )
 
         if not self.is_auth_header_missing(request):
             token = self.get_token(request)
