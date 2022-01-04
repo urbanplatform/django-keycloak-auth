@@ -1,6 +1,8 @@
 from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin
 from django.db import models
+from django.db.models import Q
 from django.utils.translation import gettext_lazy as _
+from dry_rest_permissions.generics import authenticated_users
 
 from django_keycloak.keycloak import Connect
 from .managers import KeycloakUserManager, KeycloakUserManagerAutoId
@@ -99,6 +101,24 @@ class AbstractKeycloakUserAutoId(AbstractKeycloakUser):
 
     class Meta:
         abstract = True
+
+    @staticmethod
+    @authenticated_users
+    def has_read_permission(request):
+        return True
+
+    @authenticated_users
+    def has_object_update_permission(self, request):
+        return self == request.user
+
+    @authenticated_users
+    def has_object_retrieve_permission(self, request):
+        return self == request.user
+
+    @staticmethod
+    @authenticated_users
+    def permission_filter(request):
+        return Q(username=request.user.username)
 
 
 class KeycloakUserAutoId(AbstractKeycloakUserAutoId):
