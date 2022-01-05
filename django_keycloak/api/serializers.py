@@ -7,6 +7,4 @@ class GetTokenSerializer(serializers.Serializer):
 
 
 class RefreshTokenSerializer(serializers.Serializer):
-    username = serializers.CharField(required=True, write_only=True)
-    password = serializers.CharField(required=True, write_only=True)
     refresh_token = serializers.CharField(required=True, write_only=True)
