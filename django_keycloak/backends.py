@@ -13,7 +13,15 @@ class KeycloakAuthenticationBackend(RemoteUserBackend):
             return
         try:
             user = user.objects.get(username=username)
-            # TODO: Update user info if already exists
+            # Get user info based on token
+            user_info = keycloak.get_user_info(token)
+
+            # Get user info and update
+            user.first_name = user_info.get('given_name')
+            user.last_name = user_info.get('family_name')
+            user.email = user_info.get('email')
+            user.save()
+
         except user.DoesNotExist:
             user = user.objects.create_user(username, password)
 
