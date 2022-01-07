@@ -12,7 +12,7 @@ from .urls import (
     KEYCLOAK_USER_INFO,
     KEYCLOAK_UPDATE_USER,
     KEYCLOAK_CREATE_USER,
-    KEYCLOAK_SEND_ACTIONS_EMAIL,
+    KEYCLOAK_GET_USER_CLIENT_ROLES_BY_ID,
 )
 
 
@@ -26,6 +26,7 @@ class Connect:
         server_url=None,
         realm=None,
         client_id=None,
+        client_uuid=None,
         client_secret_key=None,
         internal_url=None,
     ):
@@ -37,6 +38,7 @@ class Connect:
         try:
             self.server_url = server_url or self.config.get("SERVER_URL")
             self.realm = realm or self.config.get("REALM")
+            self.client_uuid = client_uuid or self.config.get("CLIENT_UUID")
             self.client_id = client_id or self.config.get("CLIENT_ID")
             self.client_secret_key = client_secret_key or self.config.get(
                 "CLIENT_SECRET_KEY"
@@ -282,7 +284,29 @@ class Connect:
             KEYCLOAK_GET_USER_BY_ID.format(server_url, self.realm, user_id),
             headers=headers,
         )
+        return response.json()
 
+    def get_user_client_roles_by_id(self, user_id):
+        """
+        Get user client roles from the id
+        """
+
+        token = self.get_token()
+        headers = {
+            "Content-Type": "application/json",
+            "Authorization": "Bearer {}".format(token),
+        }
+
+        server_url = self.server_url
+        if self.internal_url:
+            server_url = self.internal_url
+            headers["HOST"] = urlparse(self.server_url).netloc
+
+        response = requests.request(
+            "GET",
+            KEYCLOAK_GET_USER_CLIENT_ROLES_BY_ID.format(server_url, self.realm, user_id, self.client_uuid),
+            headers=headers,
+        )
         return response.json()
 
     @keycloak_api_error_handler
