@@ -29,11 +29,18 @@ class KeycloakMiddlewareMixin:
         }
 
         # get user or create from token
-        user = get_user_model()
         try:
-            request.user = user.objects.get_by_keycloak_id(self.keycloak.get_user_id(token))
-        except user.DoesNotExist:
-            request.user = user.objects.create_from_token(token)
+            request.user = get_user_model().objects.get_by_keycloak_id(self.keycloak.get_user_id(token))
+
+            # If user already exists update
+            user = request.user
+            user.first_name = user_info.get('given_name')
+            user.last_name = user_info.get('family_name')
+            user.email = user_info.get('email')
+            user.save()
+
+        except get_user_model().DoesNotExist:
+            request.user = get_user_model().objects.create_from_token(token)
 
         return request
 
