@@ -28,19 +28,18 @@ class KeycloakMiddlewareMixin:
             'email_verified': user_info.get('email_verified'),
         }
 
-        # get user or create from token
+        # Create or update user info
         try:
-            request.user = get_user_model().objects.get_by_keycloak_id(self.keycloak.get_user_id(token))
+            user = get_user_model().objects.get_by_keycloak_id(self.keycloak.get_user_id(token))
 
             # If user already exists update
-            user = request.user
             user.first_name = user_info.get('given_name')
             user.last_name = user_info.get('family_name')
             user.email = user_info.get('email')
             user.save()
 
         except get_user_model().DoesNotExist:
-            request.user = get_user_model().objects.create_from_token(token)
+            get_user_model().objects.create_from_token(token)
 
         return request
 
@@ -120,7 +119,6 @@ class KeycloakMiddleware(KeycloakMiddlewareMixin, MiddlewareMixin):
                     {"detail": "Invalid or expired token."},
                     status=401,
                 )
-
             request = self.append_user_info_to_request(request, token)
         return self.get_response(request)
 
