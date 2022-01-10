@@ -1,4 +1,4 @@
-# Django Keycloak Authorization
+# [WIP] Django Keycloak Authorization
 
 Middleware to allow authorization using Keycloak and Django for DRF and Graphene based projects. 
 This package can only be used for projects started from scratch since they override the users management.
@@ -10,49 +10,42 @@ This package can only be used for projects started from scratch since they overr
 4. Change Django `AUTHENTICATION_BACKENDS` to:
 
     ```json
-    AUTHENTICATION_BACKENDS = (
-        'django_keycloak.backends.KeycloakAuthenticationBackend',
-    )
+    AUTHENTICATION_BACKENDS = ('django_keycloak.backends.KeycloakAuthenticationBackend',)
     ```
-5. Add the following to Django settings:
+5. Add the following configuration to Django settings and replace the values by your own values: 
 
     ```json
     KEYCLOAK_CONFIG = {
-        'SERVER_URL': 'https://keycloak.staging.ubiwhere.com',
-        'INTERNAL_URL': 'https://keycloak.staging.ubiwhere.com',
-        'REALM': 'django',
-        'CLIENT_ID': 'api',
-        'CLIENT_SECRET_KEY': '0414b857-8430-4fbb-b86a-62bc398f37ea',
-        'CLIENT_ADMIN_ROLE': 'admin',
-        'REALM_ADMIN_ROLE': 'admin',
-        'EXEMPT_URIS': [],
-        'GRAPHQL_ENDPOINT': 'graphql/'
+        'SERVER_URL': '<PUBLIC_SERVER_URL>',
+        'INTERNAL_URL': <INTERNAL_SERVER_URL>'',
+        'REALM': '<REALM_NAME>',
+        'CLIENT_ID': '<CLIENT_ID>',
+        'CLIENT_SECRET_KEY': '<CLIENT_SECRET_KEY>',
+        'CLIENT_ADMIN_ROLE': '<CLIENT_ADMIN_ROLE>',
+        'REALM_ADMIN_ROLE': '<REALM_ADMIN_ROLE>',
+        'EXEMPT_URIS': [],  # URIS to be ignored by the package
+        'GRAPHQL_ENDPOINT': 'graphql/'  # Default graphQL endpoint
     }
     ```
 6. Override the Django user model on settings:
  
      ```json
-    AUTH_USER_MODEL = "django_keycloak.KeycloakUser"
+    AUTH_USER_MODEL = "django_keycloak.KeycloakUserAutoId"
     ```
 
-7. If using graphene add the `GRAPHQL_ENDPOINT` to settings and ``KeycloakGrapheneMiddleware` to the graphene`MIDDLEWARE`
+7. If using graphene add the `GRAPHQL_ENDPOINT` to settings and `KeycloakGrapheneMiddleware` to the graphene `MIDDLEWARE`.
     
-## Django Admin
 
-The Django superuser that can be used for the Django Admin login, must
-created with the normal management command `python manage.py
-createsuperuser`. But first you must create this user on keycloak and set a
-client admin role and realm admin role like the `CLIENT_ADMIN_ROLE` and
-`REALM_ADMIN_ROLE` that were added on settings previously.
-
-## Django Rest Framework
-
-In the Django settings the the Rest Framework settings can't have any
-Authorization values (used in other projects). Example:
+8. Configure Django Rest Framework authentication classes with `django_keycloak.authentication.KeycloakAuthentication`:
 
     ```json
-    # Rest framework settings
     REST_FRAMEWORK = {
+        'DEFAULT_AUTHENTICATION_CLASSES': [
+            'django_keycloak.authentication.KeycloakAuthentication'
+        ],
+        'DEFAULT_RENDERER_CLASSES': [
+            'rest_framework.renderers.JSONRenderer',
+        ],
         'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.LimitOffsetPagination',
         'PAGE_SIZE': 100,  # Default to 20
         'PAGINATE_BY_PARAM': 'page_size',
@@ -64,17 +57,17 @@ Authorization values (used in other projects). Example:
     ```
     
 ## DRY Permissions
-The permissions must be set like in other projects. You must the the
+The permissions must be set like in other projects. You must set the
 permissions configuration for each model. Example:
 
-    ```json
-    @staticmethod
-    @authenticated_users
-    def has_read_permission(request):
-        roles = request.remote_user.get('client_roles')
+```json
+@staticmethod
+@authenticated_users
+def has_read_permission(request):
+    roles = request.remote_user.get('client_roles')
 
-        return True if 'ADMIN' in roles else False
-    ```
+    return True if 'ADMIN' in roles else False
+```
 
 ## Keycloak users synchronization
 
