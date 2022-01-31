@@ -95,3 +95,7 @@ using celery. Fot that you just need to:
 **Attention:** This task is only responsible to delete users from local
 storage. The creation of new users, that are on keycloak, is done when they
 try to login.
+
+## Notes
+
+Support for celery 5: from version 0.7.4 on we should use celery 5 for the user sync. This implies running celery with celery -A app worker ... instead of celery worker -A app ...
