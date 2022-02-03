@@ -291,17 +291,7 @@ class Connect:
         """
         Get user client roles from the id
         """
-
-        token = self.get_token()
-        headers = {
-            "Content-Type": "application/json",
-            "Authorization": "Bearer {}".format(token),
-        }
-
-        server_url = self.server_url
-        if self.internal_url:
-            server_url = self.internal_url
-            headers["HOST"] = urlparse(self.server_url).netloc
+        server_url, headers = self._make_secure_json_request_config()
 
         response = requests.request(
             "GET",
