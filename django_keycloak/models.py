@@ -32,11 +32,6 @@ class AbstractKeycloakUser(AbstractBaseUser, PermissionsMixin):
     def full_name(self):
         return f"{self.first_name} {self.last_name}"
 
-    def _confirm_cache(self):
-        if not self._cached_user_info:
-            keycloak = Connect()
-            self._cached_user_info = keycloak.get_user_info_by_id(self.id)
-
     class Meta(AbstractBaseUser.Meta):
         abstract = True
 
@@ -76,6 +71,11 @@ class KeycloakUser(AbstractKeycloakUser):
     def last_name(self):
         self._confirm_cache()
         return self._cached_user_info.get("lastName")
+    
+    def _confirm_cache(self):
+        if not self._cached_user_info:
+            keycloak = Connect()
+            self._cached_user_info = keycloak.get_user_info_by_id(self.id)
 
 
 class AbstractKeycloakUserAutoId(AbstractKeycloakUser):
@@ -102,7 +102,7 @@ class AbstractKeycloakUserAutoId(AbstractKeycloakUser):
         return self.keycloak_id
 
     def _confirm_cache(self):
-        if not hasattr(self, "_cached_user_info"):
+        if not self._cached_user_info:
             keycloak = Connect()
             self._cached_user_info = keycloak.get_user_info_by_id(self.keycloak_id)
 

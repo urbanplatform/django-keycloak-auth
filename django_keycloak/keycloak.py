@@ -102,9 +102,8 @@ class Connect:
         @param token: request token
         @return: introspected token
         """
-        if hasattr(self, "cached_introspect"):
-            if self.cached_token == token:
-                return self.cached_introspect
+        if self.cached_introspect and self.cached_token == token:
+            return self.cached_introspect
 
         payload = {
             "token": token,
