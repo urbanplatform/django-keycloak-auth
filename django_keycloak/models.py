@@ -9,6 +9,10 @@ from .managers import KeycloakUserManager, KeycloakUserManagerAutoId
 
 
 class AbstractKeycloakUser(AbstractBaseUser, PermissionsMixin):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._cached_user_info = None
+
     id = models.UUIDField(_("keycloak_id"), unique=True, primary_key=True)
     username = models.CharField(_("username"), unique=True, max_length=20)
     is_staff = models.BooleanField(default=False)
@@ -24,27 +28,12 @@ class AbstractKeycloakUser(AbstractBaseUser, PermissionsMixin):
     def keycloak_identifier(self):
         return self.id
 
-    # @property
-    # def email(self):
-    #     self._confirm_cache()
-    #     return self._cached_user_info.get("email")
-    #
-    # @property
-    # def first_name(self):
-    #     self._confirm_cache()
-    #     return self._cached_user_info.get("firstName")
-    #
-    # @property
-    # def last_name(self):
-    #     self._confirm_cache()
-    #     return self._cached_user_info.get("lastName")
-
     @property
     def full_name(self):
         return f"{self.first_name} {self.last_name}"
 
     def _confirm_cache(self):
-        if not hasattr(self, "_cached_user_info"):
+        if not self._cached_user_info:
             keycloak = Connect()
             self._cached_user_info = keycloak.get_user_info_by_id(self.id)
 
@@ -62,13 +51,31 @@ class AbstractKeycloakUser(AbstractBaseUser, PermissionsMixin):
             values["lastName"] = last_name
         return keycloak.update_user(self.keycloak_identifier, **values)
 
+    def delete_keycloak(self):
+        keycloak = Connect()
+        keycloak.delete_user(self.keycloak_identifier)
 
-# Here just for compatibility issues
+
 class KeycloakUser(AbstractKeycloakUser):
     class Meta:
         swappable = "AUTH_USER_MODEL"
         verbose_name = _("User")
         verbose_name_plural = _("Users")
+    
+    @property
+    def email(self):
+        self._confirm_cache()
+        return self._cached_user_info.get("email")
+
+    @property
+    def first_name(self):
+        self._confirm_cache()
+        return self._cached_user_info.get("firstName")
+
+    @property
+    def last_name(self):
+        self._confirm_cache()
+        return self._cached_user_info.get("lastName")
 
 
 class AbstractKeycloakUserAutoId(AbstractKeycloakUser):

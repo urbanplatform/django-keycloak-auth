@@ -10,11 +10,15 @@ class KeycloakUserManager(UserManager):
         super().__init__(*args, **kwargs)
 
     def _create_user_on_keycloak(
-            self, username, email, first_name=None, last_name=None, enabled=True, actions=None
+            self, username, email, password=None, first_name=None, last_name=None, enabled=True, actions=None
     ):
         """Creates user on keycloak server, No state is changed on local db"""
         keycloak = Connect()
         values = {"username": username, "email": email, "enabled": enabled}
+        if password is not None:
+            values["credentials"] = [
+                {"type": "password", "value": password, "temporary": False}
+            ]
         if first_name is not None:
             values["firstName"] = first_name
         if last_name is not None:
@@ -55,7 +59,7 @@ class KeycloakUserManager(UserManager):
         if not self.keycloak.is_token_active(token):
             raise ValueError("Invalid token")
 
-        user_info = self.keycloak.introspect(token)
+        user_info = self.keycloak.get_user_info(token)
 
         # set admin permissions if user is admin
         is_staff = False
@@ -66,10 +70,7 @@ class KeycloakUserManager(UserManager):
 
         user = self.model(
             id=user_info.get("sub"),
-            username=user_info.get("username"),
-            first_name=user_info.get("given_name"),
-            last_name=user_info.get("family_ame"),
-            email=user_info.get("email"),
+            username=user_info.get("preferred_username"),
             is_staff=is_staff,
             is_superuser=is_superuser,
             date_joined=timezone.now(),
@@ -84,7 +85,7 @@ class KeycloakUserManager(UserManager):
 
     def create_keycloak_user(self,  *args, **kwargs):
         keycloak_user = self._create_user_on_keycloak(*args, **kwargs)
-        self.create(
+        return self.create(
             id=keycloak_user.get('id'),
             username=keycloak_user.get('username'),
         )
@@ -98,7 +99,7 @@ class KeycloakUserManagerAutoId(KeycloakUserManager):
         if not self.keycloak.is_token_active(token):
             raise ValueError("Invalid token")
 
-        user_info = self.keycloak.introspect(token)
+        user_info = self.keycloak.get_user_info(token)
 
         # set admin permissions if user is admin
         is_staff = False
@@ -109,7 +110,7 @@ class KeycloakUserManagerAutoId(KeycloakUserManager):
 
         user = self.model(
             keycloak_id=user_info.get("sub"),
-            username=user_info.get("username"),
+            username=user_info.get("preferred_username"),
             first_name=user_info.get("given_name"),
             last_name=user_info.get("family_name"),
             email=user_info.get("email"),
@@ -126,7 +127,7 @@ class KeycloakUserManagerAutoId(KeycloakUserManager):
 
     def create_keycloak_user(self, *args, **kwargs):
         keycloak_user = self._create_user_on_keycloak(*args, **kwargs)
-        self.create(
+        return self.create(
             username=keycloak_user.get('username'),
             keycloak_id=keycloak_user.get('id'),
         )

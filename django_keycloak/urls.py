@@ -8,6 +8,8 @@ KEYCLOAK_GET_USER_CLIENT_ROLES_BY_ID = "{}/auth/admin/realms/{}/users/{}/role-ma
 KEYCLOAK_UPDATE_USER = "{}/auth/admin/realms/{}/users/{}"
 KEYCLOAK_CREATE_USER = "{}/auth/admin/realms/{}/users"
 KEYCLOAK_SEND_ACTIONS_EMAIL = "{}/auth/admin/realms/{}/users/{}/execute-actions-email"
+KEYCLOAK_DELETE_USER = "{}/auth/admin/realms/{}/users/{}"
+KEYCLOAK_OPENID_CONFIG = "{}/auth/realms/{}/.well-known/openid-configuration"
 
 
 # ADMIN CONSOLE
