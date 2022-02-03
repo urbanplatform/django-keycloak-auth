@@ -9,12 +9,12 @@ This package can only be used for projects started from scratch since they overr
 3. Add `django_keycloak.middleware.KeycloakMiddleware` to the Django `MIDDLEWARE
 4. Change Django `AUTHENTICATION_BACKENDS` to:
 
-    ```json
+    ```python
     AUTHENTICATION_BACKENDS = ('django_keycloak.backends.KeycloakAuthenticationBackend',)
     ```
 5. Add the following configuration to Django settings and replace the values by your own values: 
 
-    ```json
+    ```python
     KEYCLOAK_CONFIG = {
         'SERVER_URL': '<PUBLIC_SERVER_URL>',
         'INTERNAL_URL': <INTERNAL_SERVER_URL>'',
@@ -29,7 +29,7 @@ This package can only be used for projects started from scratch since they overr
     ```
 6. Override the Django user model on settings:
  
-     ```json
+     ```python
     AUTH_USER_MODEL = "django_keycloak.KeycloakUserAutoId"
     ```
 
@@ -38,7 +38,7 @@ This package can only be used for projects started from scratch since they overr
 
 8. Configure Django Rest Framework authentication classes with `django_keycloak.authentication.KeycloakAuthentication`:
 
-    ```json
+    ```python
     REST_FRAMEWORK = {
         'DEFAULT_AUTHENTICATION_CLASSES': [
             'django_keycloak.authentication.KeycloakAuthentication'
@@ -60,7 +60,7 @@ This package can only be used for projects started from scratch since they overr
 The permissions must be set like in other projects. You must set the
 permissions configuration for each model. Example:
 
-```json
+```python
 @staticmethod
 @authenticated_users
 def has_read_permission(request):
@@ -78,7 +78,7 @@ using celery. Fot that you just need to:
  
 * Add the task to the `CELERY_BEAT_SCHEDULE` ìns Django settings:
 
-  ```json
+  ```python
   CELERY_BEAT_SCHEDULE = {
       'sync_users_with_keycloak': {
           'task': 'django_keycloak.tasks.sync_users_with_keycloak',
