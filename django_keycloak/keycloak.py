@@ -394,7 +394,7 @@ class Connect:
         headers = {}
         if self.internal_url:
             server_url = self.internal_url
-            headers["HOST"] = urlparse(self.server_url).netloc
+            headers["HOST"] = urlparse(self.internal_url).netloc
         return [server_url, headers]
 
     def _decode_token(
