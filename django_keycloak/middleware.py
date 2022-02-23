@@ -5,6 +5,7 @@ from django.http.response import JsonResponse
 from django.utils.deprecation import MiddlewareMixin
 
 from django_keycloak.keycloak import Connect
+from django_keycloak.models import KeycloakUserAutoId
 
 
 class KeycloakMiddlewareMixin:
@@ -32,14 +33,16 @@ class KeycloakMiddlewareMixin:
         try:
             user = get_user_model().objects.get_by_keycloak_id(self.keycloak.get_user_id(token))
 
-            # If user already exists update
-            user.first_name = user_info.get('given_name')
-            user.last_name = user_info.get('family_name')
-            user.email = user_info.get('email')
-            user.save()
+            # Only KeycloakUserAutoId stores the user details locally
+            if isinstance(user, KeycloakUserAutoId):
+                user.first_name = user_info.get('given_name')
+                user.last_name = user_info.get('family_name')
+                user.email = user_info.get('email')
+                user.save()
 
         except get_user_model().DoesNotExist:
-            get_user_model().objects.create_from_token(token)
+            user = get_user_model().objects.create_from_token(token)
+        request.user = user
 
         return request
 
@@ -92,6 +95,9 @@ class KeycloakMiddleware(KeycloakMiddlewareMixin, MiddlewareMixin):
     Middleware to validate Keycloak access based on REST validations
     """
 
+    sync_capable = True
+    async_capable = False
+
     def __init__(self, get_response):
         self.keycloak = Connect()
 
@@ -137,7 +143,8 @@ class KeycloakMiddleware(KeycloakMiddlewareMixin, MiddlewareMixin):
             return False
 
         path = request.path_info.lstrip('/')
-        if re.match(path, self.keycloak.graphql_endpoint):
+        is_graphql_endpoint = re.match(self.keycloak.graphql_endpoint, path)
+        if is_graphql_endpoint and request.method != 'GET':
             return True
 
         return False
