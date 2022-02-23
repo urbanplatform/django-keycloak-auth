@@ -22,7 +22,7 @@ class KeycloakAuthentication(BaseAuthentication):
         Return request's 'Authorization:' header, as a bytestring.
         Hide some test client ickyness where the header can be unicode.
         """
-        auth = request.META.get('HTTP_AUTHORIZATION', b'')
+        auth = request.META.get("HTTP_AUTHORIZATION", b"")
         if isinstance(auth, str):
             # Work around django test client oddness
             auth = auth.encode(HTTP_HEADER_ENCODING)
@@ -31,7 +31,7 @@ class KeycloakAuthentication(BaseAuthentication):
     @staticmethod
     def get_token(request):
         """Get the token from the HTTP request"""
-        auth_header = request.META.get('HTTP_AUTHORIZATION').split()
+        auth_header = request.META.get("HTTP_AUTHORIZATION").split()
         if len(auth_header) == 2:
             return auth_header[1]
         return None
@@ -46,7 +46,9 @@ class KeycloakAuthentication(BaseAuthentication):
             token = self.get_token(request)
             if token:
                 try:
-                    user = get_user_model().objects.get_by_keycloak_id(self.keycloak.get_user_id(token))
+                    user = get_user_model().objects.get_by_keycloak_id(
+                        self.keycloak.get_user_id(token)
+                    )
                 except get_user_model().DoesNotExist:
                     raise exceptions.AuthenticationFailed("Invalid or expired token.")
 

@@ -16,11 +16,12 @@ class KeycloakTestMixin:
             super().setUp()
             ...
     """
-    def setUp(self): #pylint: disable=invalid-name
+
+    def setUp(self):  # pylint: disable=invalid-name
         self.keycloak = Connect()
         self._start_users = {user.get("id") for user in self.keycloak.get_users()}
 
-    def tearDown(self): #pylint: disable=invalid-name
+    def tearDown(self):  # pylint: disable=invalid-name
         new_users = {user.get("id") for user in self.keycloak.get_users()}
         users_to_remove = new_users.difference(self._start_users)
         for user_id in users_to_remove:

@@ -5,10 +5,11 @@ from django_keycloak.models import KeycloakUserAutoId
 
 
 class KeycloakAuthenticationBackend(RemoteUserBackend):
-
     def authenticate(self, request, username=None, password=None):
         keycloak = Connect()
-        token = keycloak.get_token_from_credentials(username, password).get("access_token")
+        token = keycloak.get_token_from_credentials(username, password).get(
+            "access_token"
+        )
         User = get_user_model()
         if not keycloak.is_token_active(token):
             return
@@ -19,9 +20,9 @@ class KeycloakAuthenticationBackend(RemoteUserBackend):
                 user_info = keycloak.get_user_info(token)
 
                 # Get user info and update
-                user.first_name = user_info.get('given_name')
-                user.last_name = user_info.get('family_name')
-                user.email = user_info.get('email')
+                user.first_name = user_info.get("given_name")
+                user.last_name = user_info.get("family_name")
+                user.email = user_info.get("email")
         except User.DoesNotExist:
             user = User.objects.create_user(username, password)
         if keycloak.has_superuser_perm(token):

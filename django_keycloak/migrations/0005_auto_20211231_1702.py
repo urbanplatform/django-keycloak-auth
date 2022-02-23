@@ -6,23 +6,29 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('django_keycloak', '0004_keycloakuserautoid'),
+        ("django_keycloak", "0004_keycloakuserautoid"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='keycloakuserautoid',
-            name='email',
-            field=models.EmailField(blank=True, max_length=254, verbose_name='email address'),
+            model_name="keycloakuserautoid",
+            name="email",
+            field=models.EmailField(
+                blank=True, max_length=254, verbose_name="email address"
+            ),
         ),
         migrations.AddField(
-            model_name='keycloakuserautoid',
-            name='first_name',
-            field=models.CharField(blank=True, max_length=150, verbose_name='first name'),
+            model_name="keycloakuserautoid",
+            name="first_name",
+            field=models.CharField(
+                blank=True, max_length=150, verbose_name="first name"
+            ),
         ),
         migrations.AddField(
-            model_name='keycloakuserautoid',
-            name='last_name',
-            field=models.CharField(blank=True, max_length=150, verbose_name='last name'),
+            model_name="keycloakuserautoid",
+            name="last_name",
+            field=models.CharField(
+                blank=True, max_length=150, verbose_name="last name"
+            ),
         ),
     ]

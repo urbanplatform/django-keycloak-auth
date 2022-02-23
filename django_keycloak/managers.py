@@ -10,7 +10,14 @@ class KeycloakUserManager(UserManager):
         super().__init__(*args, **kwargs)
 
     def _create_user_on_keycloak(
-            self, username, email, password=None, first_name=None, last_name=None, enabled=True, actions=None
+        self,
+        username,
+        email,
+        password=None,
+        first_name=None,
+        last_name=None,
+        enabled=True,
+        actions=None,
     ):
         """Creates user on keycloak server, No state is changed on local db"""
         keycloak = Connect()
@@ -32,7 +39,9 @@ class KeycloakUserManager(UserManager):
         """
         Creates a local user if the user exists on keycloak
         """
-        token = self.keycloak.get_token_from_credentials(username, password).get("access_token")
+        token = self.keycloak.get_token_from_credentials(username, password).get(
+            "access_token"
+        )
         if token is None:
             raise ValueError("Wrong credentials")
         user = self.create_from_token(token, password)
@@ -42,7 +51,9 @@ class KeycloakUserManager(UserManager):
         """
         Creates a local super user if the user exists on keycloak and is superuser
         """
-        token = self.keycloak.get_token_from_credentials(username, password).get("access_token")
+        token = self.keycloak.get_token_from_credentials(username, password).get(
+            "access_token"
+        )
         if token is None:
             raise ValueError("Wrong credentials")
         if not self.keycloak.has_superuser_perm(token):
@@ -82,12 +93,11 @@ class KeycloakUserManager(UserManager):
     def get_by_keycloak_id(self, keycloak_id):
         return self.get(id=keycloak_id)
 
-
-    def create_keycloak_user(self,  *args, **kwargs):
+    def create_keycloak_user(self, *args, **kwargs):
         keycloak_user = self._create_user_on_keycloak(*args, **kwargs)
         return self.create(
-            id=keycloak_user.get('id'),
-            username=keycloak_user.get('username'),
+            id=keycloak_user.get("id"),
+            username=keycloak_user.get("username"),
         )
 
 
@@ -128,6 +138,6 @@ class KeycloakUserManagerAutoId(KeycloakUserManager):
     def create_keycloak_user(self, *args, **kwargs):
         keycloak_user = self._create_user_on_keycloak(*args, **kwargs)
         return self.create(
-            username=keycloak_user.get('username'),
-            keycloak_id=keycloak_user.get('id'),
+            username=keycloak_user.get("username"),
+            keycloak_id=keycloak_user.get("id"),
         )
