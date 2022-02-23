@@ -9,7 +9,6 @@ from django_keycloak.models import KeycloakUserAutoId
 
 
 class KeycloakMiddlewareMixin:
-
     def append_user_info_to_request(self, request, token):
         """Appends user info to the request"""
 
@@ -18,26 +17,28 @@ class KeycloakMiddlewareMixin:
 
         user_info = self.keycloak.get_user_info(token)
         request.remote_user = {
-            'client_roles': self.keycloak.client_roles(token),
-            'realm_roles': self.keycloak.realm_roles(token),
-            'client_scope': self.keycloak.client_scope(token),
-            'name': user_info.get('name'),
-            'given_name': user_info.get('given_name'),
-            'family_name': user_info.get('family_name'),
-            'username': user_info.get('preferred_username'),
-            'email': user_info.get('email'),
-            'email_verified': user_info.get('email_verified'),
+            "client_roles": self.keycloak.client_roles(token),
+            "realm_roles": self.keycloak.realm_roles(token),
+            "client_scope": self.keycloak.client_scope(token),
+            "name": user_info.get("name"),
+            "given_name": user_info.get("given_name"),
+            "family_name": user_info.get("family_name"),
+            "username": user_info.get("preferred_username"),
+            "email": user_info.get("email"),
+            "email_verified": user_info.get("email_verified"),
         }
 
         # Create or update user info
         try:
-            user = get_user_model().objects.get_by_keycloak_id(self.keycloak.get_user_id(token))
+            user = get_user_model().objects.get_by_keycloak_id(
+                self.keycloak.get_user_id(token)
+            )
 
             # Only KeycloakUserAutoId stores the user details locally
             if isinstance(user, KeycloakUserAutoId):
-                user.first_name = user_info.get('given_name')
-                user.last_name = user_info.get('family_name')
-                user.email = user_info.get('email')
+                user.first_name = user_info.get("given_name")
+                user.last_name = user_info.get("family_name")
+                user.email = user_info.get("email")
                 user.save()
 
         except get_user_model().DoesNotExist:
@@ -49,12 +50,12 @@ class KeycloakMiddlewareMixin:
     @staticmethod
     def is_auth_header_missing(request):
         """Check if exists an authentication header in the HTTP request"""
-        return 'HTTP_AUTHORIZATION' not in request.META
+        return "HTTP_AUTHORIZATION" not in request.META
 
     @staticmethod
     def get_token(request):
         """Get the token from the HTTP request"""
-        auth_header = request.META.get('HTTP_AUTHORIZATION').split()
+        auth_header = request.META.get("HTTP_AUTHORIZATION").split()
         if len(auth_header) == 2:
             return auth_header[1]
         return None
@@ -132,7 +133,7 @@ class KeycloakMiddleware(KeycloakMiddlewareMixin, MiddlewareMixin):
         """
         Check if the current URI path needs to skip authorization
         """
-        path = request.path_info.lstrip('/')
+        path = request.path_info.lstrip("/")
         return any(re.match(m, path) for m in self.keycloak.exempt_uris)
 
     def is_graphql_endpoint(self, request):
@@ -142,9 +143,9 @@ class KeycloakMiddleware(KeycloakMiddlewareMixin, MiddlewareMixin):
         if self.keycloak.graphql_endpoint is None:
             return False
 
-        path = request.path_info.lstrip('/')
+        path = request.path_info.lstrip("/")
         is_graphql_endpoint = re.match(self.keycloak.graphql_endpoint, path)
-        if is_graphql_endpoint and request.method != 'GET':
+        if is_graphql_endpoint and request.method != "GET":
             return True
 
         return False

@@ -6,13 +6,13 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('django_keycloak', '0001_initial'),
+        ("django_keycloak", "0001_initial"),
     ]
 
     operations = [
         migrations.RenameField(
-            model_name='keycloakuser',
-            old_name='keycloak_id',
-            new_name='id',
+            model_name="keycloakuser",
+            old_name="keycloak_id",
+            new_name="id",
         ),
     ]

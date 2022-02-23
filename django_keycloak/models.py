@@ -56,7 +56,7 @@ class KeycloakUser(AbstractKeycloakUser):
         swappable = "AUTH_USER_MODEL"
         verbose_name = _("User")
         verbose_name_plural = _("Users")
-    
+
     @property
     def email(self):
         self._confirm_cache()
@@ -71,7 +71,7 @@ class KeycloakUser(AbstractKeycloakUser):
     def last_name(self):
         self._confirm_cache()
         return self._cached_user_info.get("lastName")
-    
+
     def _confirm_cache(self):
         if not self._cached_user_info:
             keycloak = Connect()
@@ -91,9 +91,9 @@ class AbstractKeycloakUserAutoId(AbstractKeycloakUser):
 
     id = models.AutoField(primary_key=True)
     keycloak_id = models.UUIDField(_("keycloak_id"), unique=True)
-    first_name = models.CharField(_('first name'), max_length=150, blank=True)
-    last_name = models.CharField(_('last name'), max_length=150, blank=True)
-    email = models.EmailField(_('email address'), blank=True)
+    first_name = models.CharField(_("first name"), max_length=150, blank=True)
+    last_name = models.CharField(_("last name"), max_length=150, blank=True)
+    email = models.EmailField(_("email address"), blank=True)
 
     objects = KeycloakUserManagerAutoId()
 
