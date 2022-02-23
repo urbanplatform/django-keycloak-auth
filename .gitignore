@@ -115,3 +115,6 @@ dmypy.json
 .pyre/
 
 example/
+
+# Pycharm
+.idea/
