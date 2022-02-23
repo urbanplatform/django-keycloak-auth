@@ -295,7 +295,9 @@ class Connect:
 
         response = requests.request(
             "GET",
-            KEYCLOAK_GET_USER_CLIENT_ROLES_BY_ID.format(server_url, self.realm, user_id, self.client_uuid),
+            KEYCLOAK_GET_USER_CLIENT_ROLES_BY_ID.format(
+                server_url, self.realm, user_id, self.client_uuid
+            ),
             headers=headers,
         )
         return response.json()
@@ -388,7 +390,7 @@ class Connect:
         server_url, headers = self._make_request_config()
         headers["Content-Type"] = "application/json"
         return [server_url, headers]
-    
+
     def _make_request_config(self):
         server_url = self.server_url
         headers = {}
