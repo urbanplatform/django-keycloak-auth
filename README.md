@@ -14,7 +14,7 @@ This package can only be used for projects started from scratch since they overr
     ```
 5. Add the following configuration to Django settings and replace the values by your own values: 
 
-    ```python
+    ```
     KEYCLOAK_CONFIG = {
         'SERVER_URL': '<PUBLIC_SERVER_URL>',
         'INTERNAL_URL': <INTERNAL_SERVER_URL>'',
@@ -38,7 +38,7 @@ This package can only be used for projects started from scratch since they overr
 
 8. Configure Django Rest Framework authentication classes with `django_keycloak.authentication.KeycloakAuthentication`:
 
-    ```python
+    ```
     REST_FRAMEWORK = {
         'DEFAULT_AUTHENTICATION_CLASSES': [
             'django_keycloak.authentication.KeycloakAuthentication'
