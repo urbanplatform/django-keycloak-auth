@@ -1,3 +1,4 @@
+import logging
 import re
 
 from django.contrib.auth import get_user_model
@@ -67,6 +68,9 @@ class KeycloakGrapheneMiddleware(KeycloakMiddlewareMixin):
     """
 
     def __init__(self):
+        logging.warning(
+            "All functionality is provided by KeycloakMiddleware", DeprecationWarning, 2
+        )
         self.keycloak = Connect()
 
     def resolve(self, next, root, info, **kwargs):
