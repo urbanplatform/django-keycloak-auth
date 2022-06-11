@@ -8,6 +8,7 @@ import requests
 from django.conf import settings
 from jwt import PyJWKClient
 from jwt.exceptions import InvalidTokenError
+from cachetools.func import ttl_cache
 
 from .decorators import keycloak_api_error_handler
 from .urls import (
@@ -399,6 +400,7 @@ class Connect:
             headers["HOST"] = urlparse(self.internal_url).netloc
         return [server_url, headers]
 
+    @ttl_cache(maxsize=128, ttl=60)
     def _decode_token(
         self, token: str, audience: Union[str, List[str]], raise_error=False
     ) -> Optional[Dict]:
