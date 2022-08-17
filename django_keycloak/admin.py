@@ -1,10 +1,10 @@
 from django.conf import settings
 from django.contrib import admin
+from django.contrib.auth import get_user_model
 from django.utils.html import format_html
 from django.utils.translation import gettext_lazy as _
-from django.contrib.auth import get_user_model
 
-from django_keycloak.urls import KEYCLOAK_ADMIN_USER_PAGE
+from django_keycloak.urls import BASE_PATH, KEYCLOAK_ADMIN_USER_PAGE
 
 User = get_user_model()
 
@@ -33,8 +33,10 @@ class UserAdmin(admin.ModelAdmin):
     def keycloak_link(self, obj):
         config = settings.KEYCLOAK_CONFIG
         label = obj.id
+        base_path = config.get("BASE_PATH", BASE_PATH)
+        host = f"{config.get('SERVER_URL')}{base_path}"
         link = KEYCLOAK_ADMIN_USER_PAGE.format(
-            host=config.get("SERVER_URL"), realm=config.get("REALM"), id=label
+            host=host, realm=config.get("REALM"), id=label
         )
         return format_html(
             '<a href="{link}" target="_blank">{label}</a>', link=link, label=label

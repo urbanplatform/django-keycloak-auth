@@ -12,17 +12,17 @@ from cachetools.func import ttl_cache
 
 from .decorators import keycloak_api_error_handler
 from .urls import (
+    BASE_PATH,
     KEYCLOAK_CREATE_USER,
     KEYCLOAK_DELETE_USER,
     KEYCLOAK_GET_TOKEN,
     KEYCLOAK_GET_USER_BY_ID,
+    KEYCLOAK_GET_USER_CLIENT_ROLES_BY_ID,
     KEYCLOAK_GET_USERS,
     KEYCLOAK_INTROSPECT_TOKEN,
-    KEYCLOAK_USER_INFO,
     KEYCLOAK_OPENID_CONFIG,
     KEYCLOAK_UPDATE_USER,
-    KEYCLOAK_CREATE_USER,
-    KEYCLOAK_GET_USER_CLIENT_ROLES_BY_ID,
+    KEYCLOAK_USER_INFO,
 )
 
 
@@ -34,6 +34,7 @@ class Connect:
     def __init__(
         self,
         server_url=None,
+        base_path=None,
         realm=None,
         client_id=None,
         client_uuid=None,
@@ -47,6 +48,7 @@ class Connect:
             raise Exception("Missing KEYCLOAK_CONFIG on settings file.")
         try:
             self.server_url = server_url or self.config.get("SERVER_URL")
+            self.base_path = base_path or self.config.get("BASE_PATH", BASE_PATH)
             self.realm = realm or self.config.get("REALM")
             self.client_uuid = client_uuid or self.config.get("CLIENT_UUID")
             self.client_id = client_id or self.config.get("CLIENT_ID")
@@ -215,7 +217,9 @@ class Connect:
 
         server_url, headers = self._make_secure_request_config(token)
         response = requests.request(
-            "GET", KEYCLOAK_USER_INFO.format(server_url, self.realm), headers=headers
+            "GET",
+            KEYCLOAK_USER_INFO.format(server_url, self.realm),
+            headers=headers,
         )
         return response.json()
 
@@ -292,6 +296,7 @@ class Connect:
         """
         Get user client roles from the id
         """
+
         server_url, headers = self._make_secure_json_request_config()
 
         response = requests.request(
@@ -395,11 +400,11 @@ class Connect:
         return [server_url, headers]
 
     def _make_request_config(self):
-        server_url = self.server_url
+        server_url = f"{self.server_url}{self.base_path}"
         headers = {}
         if self.internal_url:
-            server_url = self.internal_url
-            headers["HOST"] = urlparse(self.internal_url).netloc
+            server_url = f"{self.internal_url}{self.base_path}"
+            headers["HOST"] = urlparse(self.server_url).netloc
         return [server_url, headers]
 
     @ttl_cache(maxsize=128, ttl=60)
