@@ -1,0 +1,20 @@
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+Django = ">=2.2"
+djangorestframework = ">=3.0"
+dry-rest-permissions = ">=0.1"
+PyJWT = {version = "~=2.4.0", extras = ["crypto"]}
+requests = ">=2.0"
+
+[dev-packages]
+build = "~=0.8"
+twine = "~=4.0"
+black = "~=22.6"
+setuptools = "~=65.0"
+
+[requires]
+python_version = "3.8"

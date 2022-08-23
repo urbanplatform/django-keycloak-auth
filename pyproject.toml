@@ -1,0 +1,43 @@
+[build-system]
+build-backend = "setuptools.build_meta"
+requires = ["setuptools>=65.0.0", "wheel"]
+
+[project]
+authors = [{name = "Moritz Ulmer", email = "moritz.ulmer@posteo.de"}]
+classifiers = [
+  "License :: OSI Approved :: MIT License",
+  "Programming Language :: Python",
+  "Programming Language :: Python :: 3",
+  "Environment :: Web Environment",
+  "Framework :: Django",
+  "Intended Audience :: Developers",
+  "Topic :: Security",
+]
+dependencies = [
+  "django >= 2.2",
+  "djangorestframework >= 3.0",
+  "dry-rest-permissions >= 0.1",
+  "pyjwt[crypto] ~= 2.4.0",
+  "requests >= 2.0",
+]
+description = "Middleware to allow authorization using Keycloak and Django"
+keywords = ["keycloak", "django", "authorization"]
+license = {file = "LICENSE"}
+name = "django-keycloak-tere"
+readme = "README.md"
+requires-python = ">=3.8"
+version = "1.2.0"
+
+[project.optional-dependencies]
+dev = [
+  "build ~= 0.8",
+  "twine ~= 4.0",
+  "black ~= 22.6",
+]
+
+[tool.setuptools]
+packages = ["django_keycloak"]
+package-dir = {"django_keycloak" = "src/django_keycloak"}
+
+[project.urls]
+Homepage = "https://github.com/moritz89/django-keycloak-tere"
