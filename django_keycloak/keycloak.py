@@ -350,6 +350,8 @@ class Connect:
 
         # Get the public key from the identity provider, i.e., the keycloak server
         decoded = self._decode_token(self._client_token, self.client_jwt_audience)
+        if not decoded:
+            return True
         exp = datetime.fromtimestamp(decoded["exp"], tz=timezone.utc)
         iat = datetime.fromtimestamp(decoded["iat"], tz=timezone.utc)
         now = datetime.now(tz=timezone.utc)
