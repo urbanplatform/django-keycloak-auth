@@ -1,20 +1,20 @@
 # [WIP] Django Keycloak Authorization
 
-Middleware to allow authorization using Keycloak and Django for DRF and Graphene based projects. 
-This package can only be used for projects started from scratch since they override the users management.
+Middleware to allow authorization using Keycloak and Django for django-rest-framework (DRF) and Graphene-based projects. 
+This package should only be used in projects starting from scratch, since it overrides the users' management.
 
 ## Installation
 
-1. Add `django_keycloak` to the Django `INSTALLED_APPS`
-3. Add `django_keycloak.middleware.KeycloakMiddleware` to the Django `MIDDLEWARE
-4. Change Django `AUTHENTICATION_BACKENDS` to:
+1. Add `django_keycloak` to the Django project's `INSTALLED_APPS` set in the `settings` file
+2. Add `django_keycloak.middleware.KeycloakMiddleware` to the Django `MIDDLEWARE` set in the `settings` file
+3. In your Django project's `settings` file, change the Django `AUTHENTICATION_BACKENDS` to:
 
     ```python
     AUTHENTICATION_BACKENDS = ('django_keycloak.backends.KeycloakAuthenticationBackend',)
     ```
-5. Add the following configuration to Django settings and replace the values by your own values: 
+4. Add the following configuration to Django settings and replace the values with your own configuration attributes: 
 
-    ```
+    ```python
     KEYCLOAK_CONFIG = {
         'SERVER_URL': '<PUBLIC_SERVER_URL>',
         'INTERNAL_URL': <INTERNAL_SERVER_URL>'',
@@ -27,18 +27,18 @@ This package can only be used for projects started from scratch since they overr
         'GRAPHQL_ENDPOINT': 'graphql/'  # Default graphQL endpoint
     }
     ```
-6. Override the Django user model on settings:
+5. Override the Django user model in the `settings` file:
  
      ```python
     AUTH_USER_MODEL = "django_keycloak.KeycloakUserAutoId"
     ```
 
-7. If using graphene add the `GRAPHQL_ENDPOINT` to settings and `KeycloakGrapheneMiddleware` to the graphene `MIDDLEWARE`.
+6. If you are using Graphene, add the `GRAPHQL_ENDPOINT` to settings and `KeycloakGrapheneMiddleware` to the Graphene's `MIDDLEWARE`.
     
 
-8. Configure Django Rest Framework authentication classes with `django_keycloak.authentication.KeycloakAuthentication`:
+8. Configure Django-Rest-Framework authentication classes with `django_keycloak.authentication.KeycloakAuthentication`:
 
-    ```
+    ```python
     REST_FRAMEWORK = {
         'DEFAULT_AUTHENTICATION_CLASSES': [
             'django_keycloak.authentication.KeycloakAuthentication'
@@ -71,12 +71,12 @@ def has_read_permission(request):
 
 ## Keycloak users synchronization
 
-The management command `sync_keycloak_users` must be ran periodically. In
-order to remove from the local users the ones that are no longer available at
-keycloak. This command can be called using the task named `sync_users_with_keycloak`,
-using celery. Fot that you just need to:
+The management command `sync_keycloak_users` must be ran periodically, in
+order to remove from the users no longer available at
+Keycloak from the local users. This command can be called using the task named 
+`sync_users_with_keycloak`, using Celery. Fot that, you just need to:
  
-* Add the task to the `CELERY_BEAT_SCHEDULE` ìns Django settings:
+* Add the task to the `CELERY_BEAT_SCHEDULE` ìn the Django project's settings:
 
   ```python
   CELERY_BEAT_SCHEDULE = {
@@ -88,14 +88,18 @@ using celery. Fot that you just need to:
   }
   ```
 
-* Add the `sync_users` queue to the docker-compose celery service:
+* Add the `sync_users` queue to the `docker-compose`'s `celery` service:
 
   `command: celery worker -A citibrain_base -B -E -l info -Q backup,celery,sync_users --autoscale=4,1`
 
 **Attention:** This task is only responsible to delete users from local
-storage. The creation of new users, that are on keycloak, is done when they
+storage. The creation of new users, on Keycloak, is done when they
 try to login.
 
 ## Notes
 
 Support for celery 5: from version 0.7.4 on we should use celery 5 for the user sync. This implies running celery with celery -A app worker ... instead of celery worker -A app ...
+
+## Contact
+
+django-keycloak-auth [at] googlegroups [dot] com
