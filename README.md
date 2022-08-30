@@ -5,19 +5,34 @@ This package should only be used in projects starting from scratch, since it ove
 
 ## Installation
 
-1. Add `django_keycloak` to the Django project's `INSTALLED_APPS` set in the `settings` file
-2. Add `django_keycloak.middleware.KeycloakMiddleware` to the Django `MIDDLEWARE` set in the `settings` file
-3. In your Django project's `settings` file, change the Django `AUTHENTICATION_BACKENDS` to:
+1. Add the module to your environment
+    * With PIP:
+        
+        ```shell
+        pip install django-uw-keycloak
+        ```
+
+    * By compiling from source:
+
+        ```shell
+        git clone https://github.com/urbanplatform/django-keycloak-auth && \
+        cd django-keycloak-auth && \
+        python3 setup.py install
+        ```
+
+2. Add `django_keycloak` to the Django project's `INSTALLED_APPS` set in the `settings` file
+3. Add `django_keycloak.middleware.KeycloakMiddleware` to the Django `MIDDLEWARE` set in the `settings` file
+4. In your Django project's `settings` file, change the Django `AUTHENTICATION_BACKENDS` to:
 
     ```python
     AUTHENTICATION_BACKENDS = ('django_keycloak.backends.KeycloakAuthenticationBackend',)
     ```
-4. Add the following configuration to Django settings and replace the values with your own configuration attributes: 
+5. Add the following configuration to Django settings and replace the values with your own configuration attributes: 
 
     ```python
     KEYCLOAK_CONFIG = {
         'SERVER_URL': '<PUBLIC_SERVER_URL>',
-        'INTERNAL_URL': <INTERNAL_SERVER_URL>'',
+        'INTERNAL_URL': '<INTERNAL_SERVER_URL>',
         'REALM': '<REALM_NAME>',
         'CLIENT_ID': '<CLIENT_ID>',
         'CLIENT_SECRET_KEY': '<CLIENT_SECRET_KEY>',
@@ -27,13 +42,13 @@ This package should only be used in projects starting from scratch, since it ove
         'GRAPHQL_ENDPOINT': 'graphql/'  # Default graphQL endpoint
     }
     ```
-5. Override the Django user model in the `settings` file:
+6. Override the Django user model in the `settings` file:
  
      ```python
     AUTH_USER_MODEL = "django_keycloak.KeycloakUserAutoId"
     ```
 
-6. If you are using Graphene, add the `GRAPHQL_ENDPOINT` to settings and `KeycloakGrapheneMiddleware` to the Graphene's `MIDDLEWARE`.
+7. If you are using Graphene, add the `GRAPHQL_ENDPOINT` to settings and `KeycloakGrapheneMiddleware` to the Graphene's `MIDDLEWARE`.
     
 
 8. Configure Django-Rest-Framework authentication classes with `django_keycloak.authentication.KeycloakAuthentication`:
