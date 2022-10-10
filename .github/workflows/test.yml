@@ -1,4 +1,4 @@
-name: Python package
+name: Run CI tests
 
 on:
   push:
@@ -9,7 +9,7 @@ on:
       - master
 
 jobs:
-  build:
+  test:
     runs-on: ubuntu-latest
     env:
       python-version: "3.8"
@@ -26,7 +26,7 @@ jobs:
 
     services:
       keycloak:
-        image: quay.io/keycloak/keycloak:15
+        image: quay.io/keycloak/keycloak:19.0.3
         ports:
           - 8080:8080
           - 9990:9990
