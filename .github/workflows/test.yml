@@ -1,0 +1,57 @@
+name: Python package
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    env:
+      python-version: "3.8"
+      KEYCLOAK_HOST: localhost
+      KEYCLOAK_PORT: 8080
+      KEYCLOAK_ADMIN_USER: admin
+      KEYCLOAK_ADMIN_PASSWORD: admin
+      KEYCLOAK_REALM: test-realm
+      KEYCLOAK_CLIENT_ID: test-client
+      KEYCLOAK_CLIENT_SECRET_KEY: f6974574-c773-4554-826d-06946cd55e98
+    strategy:
+      matrix:
+        python-version: ["3.8", "3.9", "3.10"]
+
+    services:
+      keycloak:
+        image: keycloak:15
+        ports:
+          - 8080:8080
+          - 9990:9990
+        options: >-
+          -b 0.0.0.0
+          -Djboss.bind.address.management=0.0.0.0
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ matrix.python-version }}
+    # - name: Set up the cache
+    #   uses: actions/cache@v1
+    #   env:
+    #     cache-name: cache-python-packages
+    #   with:
+    #     path: .venv
+    #     key: ${{ matrix.python-version }}-${{ env.cache-name }}
+    #     restore-keys: ${{ matrix.python-version }}
+    - name: Set up the project
+      run: |
+        pip install poetry
+        poetry config virtualenvs.in-project true
+        poetry install
+    - name: Test with pytest
+      run: ./tests/start.sh
