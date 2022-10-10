@@ -30,9 +30,9 @@ jobs:
         ports:
           - 8080:8080
           - 9990:9990
-        options: >-
-          -b 0.0.0.0
-          -Djboss.bind.address.management=0.0.0.0
+        # options: >-
+        #   -b=0.0.0.0
+        #   -Djboss.bind.address.management=0.0.0.0
 
     steps:
     - uses: actions/checkout@v3
