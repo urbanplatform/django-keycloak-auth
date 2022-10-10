@@ -26,7 +26,7 @@ jobs:
 
     services:
       keycloak:
-        image: keycloak:15
+        image: quay.io/keycloak/keycloak:15
         ports:
           - 8080:8080
           - 9990:9990
