@@ -8,18 +8,18 @@ on:
     branches:
       - master
 
+env:
+  KEYCLOAK_HOST: localhost
+  KEYCLOAK_PORT: 8080
+  KEYCLOAK_ADMIN_USER: admin
+  KEYCLOAK_ADMIN_PASSWORD: admin
+  KEYCLOAK_REALM: test-realm
+  KEYCLOAK_CLIENT_ID: test-client
+  KEYCLOAK_CLIENT_SECRET_KEY: f6974574-c773-4554-826d-06946cd55e98
+
 jobs:
   test:
     runs-on: ubuntu-latest
-    env:
-      python-version: "3.8"
-      KEYCLOAK_HOST: localhost
-      KEYCLOAK_PORT: 8080
-      KEYCLOAK_ADMIN_USER: admin
-      KEYCLOAK_ADMIN_PASSWORD: admin
-      KEYCLOAK_REALM: test-realm
-      KEYCLOAK_CLIENT_ID: test-client
-      KEYCLOAK_CLIENT_SECRET_KEY: f6974574-c773-4554-826d-06946cd55e98
     strategy:
       matrix:
         python-version: ["3.8", "3.9", "3.10"]
@@ -31,8 +31,8 @@ jobs:
           - 8080:8080
           - 9990:9990
         options: >-
-          -e "KEYCLOAK_USER=${{ KEYCLOAK_ADMIN_PASSWORD }}"
-          -e "KEYCLOAK_PASSWORD=${{ KEYCLOAK_ADMIN_PASSWORD }}"
+          -e "KEYCLOAK_USER=${{ env.KEYCLOAK_ADMIN_PASSWORD }}"
+          -e "KEYCLOAK_PASSWORD=${{ env.KEYCLOAK_ADMIN_PASSWORD }}"
 
     steps:
     - uses: actions/checkout@v3
