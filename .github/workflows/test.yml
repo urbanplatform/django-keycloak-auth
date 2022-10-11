@@ -22,10 +22,11 @@ jobs:
     strategy:
       matrix:
         python-version: ["3.8", "3.9", "3.10"]
+        keycloak-tag: ["19.0.3-legacy", "15.1.1"]
 
     services:
       keycloak:
-        image: quay.io/keycloak/keycloak:19.0.3-legacy
+        image: quay.io/keycloak/keycloak:${{ matrix.keycloak-tag }}
         ports:
           - 8080:8080
           - 9990:9990
