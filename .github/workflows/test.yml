@@ -30,6 +30,9 @@ jobs:
         ports:
           - 8080:8080
           - 9990:9990
+        options: >-
+          -e "KEYCLOAK_USER=$KEYCLOAK_ADMIN_USER"
+          -e "KEYCLOAK_PASSWORD=$KEYCLOAK_ADMIN_PASSWORD"
 
     steps:
     - uses: actions/checkout@v3
