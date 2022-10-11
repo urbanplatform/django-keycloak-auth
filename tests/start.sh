@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Exit with nonzero exit code if anything fails
-set -eo pipefail
+set -exo pipefail
 # Ensure the script is running in this directory
 cd "$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")"
 
@@ -24,6 +24,7 @@ KEYCLOAK_TOKEN=$(curl -s \
   -d "password=$KEYCLOAK_ADMIN_PASSWORD" \
   "$KEYCLOAK_URL/auth/realms/master/protocol/openid-connect/token" \
   | jq -r .access_token)
+echo "$KEYCLOAK_TOKEN"
 # Combine the realm and user config and send it to the Keycloak server
 HTTP_CODE=$(curl -X POST --data-binary "@realm-export.json" \
     -s -o /dev/null -w "%{http_code}" \
