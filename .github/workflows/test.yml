@@ -42,8 +42,9 @@ jobs:
         python-version: ${{ matrix.python-version }}
     - name: Set up the cache
       uses: actions/cache@v1
-      env:
-        cache-name: cache-python-packages
+      id: cached-poetry-dependencies
+      # env:
+      #   cache-name: cache-python-packages
       with:
         path: .venv
         key: poetry-${{ matrix.python-version }}-${{ hashFiles('poetry.lock') }}
@@ -51,6 +52,8 @@ jobs:
       run: |
         pip install poetry
         poetry config virtualenvs.in-project true
-        poetry install
+    - name: Install Poetry packages
+      run: poetry install
+      if: steps.cached-poetry-dependencies.outputs.cache-hit != 'true'
     - name: Test with pytest
       run: ./tests/start.sh
