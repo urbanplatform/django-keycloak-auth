@@ -30,9 +30,6 @@ jobs:
         ports:
           - 8080:8080
           - 9990:9990
-        # options: >-
-        #   -b=0.0.0.0
-        #   -Djboss.bind.address.management=0.0.0.0
 
     steps:
     - uses: actions/checkout@v3
@@ -50,6 +47,7 @@ jobs:
     #     restore-keys: ${{ matrix.python-version }}
     - name: Set up the project
       run: |
+        sudo apt-get install curl jq
         pip install poetry
         poetry config virtualenvs.in-project true
         poetry install
