@@ -47,7 +47,6 @@ jobs:
       with:
         path: .venv
         key: poetry-${{ matrix.python-version }}-${{ hashFiles('poetry.lock') }}
-        restore-keys: ${{ matrix.python-version }}
     - name: Set up the project
       run: |
         pip install poetry
