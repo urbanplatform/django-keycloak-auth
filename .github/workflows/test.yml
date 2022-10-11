@@ -31,8 +31,8 @@ jobs:
           - 8080:8080
           - 9990:9990
         options: >-
-          -e "KEYCLOAK_USER=${{env.KEYCLOAK_ADMIN_PASSWORD}}"
-          -e "KEYCLOAK_PASSWORD=${{env.KEYCLOAK_ADMIN_PASSWORD}}"
+          -e "KEYCLOAK_USER=${{ env.KEYCLOAK_ADMIN_PASSWORD }}"
+          -e "KEYCLOAK_PASSWORD=${{ env.KEYCLOAK_ADMIN_PASSWORD }}"
 
     steps:
     - uses: actions/checkout@v3
