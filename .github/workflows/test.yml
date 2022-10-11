@@ -31,8 +31,8 @@ jobs:
           - 8080:8080
           - 9990:9990
         options: >-
-          -e "KEYCLOAK_USER=$KEYCLOAK_ADMIN_USER"
-          -e "KEYCLOAK_PASSWORD=$KEYCLOAK_ADMIN_PASSWORD"
+          -e "KEYCLOAK_USER=admin"
+          -e "KEYCLOAK_PASSWORD=admin"
 
     steps:
     - uses: actions/checkout@v3
