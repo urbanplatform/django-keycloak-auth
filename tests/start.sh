@@ -16,14 +16,15 @@ done
 
 echo "Importing debug Keycloak setup"
 # Get an access token
-KEYCLOAK_TOKEN=$(curl -s \
+KEYCLOAK_TOKEN_RESPONSE=$(curl -s \
   -H "Content-Type: application/x-www-form-urlencoded" \
   -d "grant_type=password" \
   -d "client_id=admin-cli" \
   -d "username=$KEYCLOAK_ADMIN_USER" \
   -d "password=$KEYCLOAK_ADMIN_PASSWORD" \
-  "$KEYCLOAK_URL/auth/realms/master/protocol/openid-connect/token" \
-  | jq -r .access_token)
+  "$KEYCLOAK_URL/auth/realms/master/protocol/openid-connect/token")
+echo "$KEYCLOAK_TOKEN_RESPONSE"
+KEYCLOAK_TOKEN=$(echo "$KEYCLOAK_TOKEN_RESPONSE" | jq -r .access_token)
 echo "$KEYCLOAK_TOKEN"
 # Combine the realm and user config and send it to the Keycloak server
 HTTP_CODE=$(curl -X POST --data-binary "@realm-export.json" \
