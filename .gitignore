@@ -118,3 +118,19 @@ example/
 
 # Pycharm
 .idea/
+users/__init__.py
+users/admin.py
+users/apps.py
+users/models.py
+users/tests.py
+users/views.py
+users/migrations/__init__.py
+users/migrations/0001_initial.py
+users/migrations/0002_myprofile_x.py
+.gitignore
+project/__init__.py
+project/asgi.py
+project/settings.py
+project/urls.py
+project/wsgi.py
+manage.py
