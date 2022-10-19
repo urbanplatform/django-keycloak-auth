@@ -1,13 +1,13 @@
 # [WIP] Django Keycloak Authorization
 
-Middleware to allow authorization using Keycloak and Django for django-rest-framework (DRF) and Graphene-based projects. 
+Middleware to allow authorization using Keycloak and Django for django-rest-framework (DRF) and Graphene-based projects.
 This package should only be used in projects starting from scratch, since it overrides the users' management.
 
 ## Installation
 
 1. Add the module to your environment
     * With PIP:
-        
+
         ```shell
         pip install django-uw-keycloak
         ```
@@ -27,13 +27,14 @@ This package should only be used in projects starting from scratch, since it ove
     ```python
     AUTHENTICATION_BACKENDS = ('django_keycloak.backends.KeycloakAuthenticationBackend',)
     ```
-5. Add the following configuration to Django settings and replace the values with your own configuration attributes: 
+
+5. Add the following configuration to Django settings and replace the values with your own configuration attributes:
 
     ```python
     KEYCLOAK_CONFIG = {
         'SERVER_URL': '<PUBLIC_SERVER_URL>',
         'INTERNAL_URL': '<INTERNAL_SERVER_URL>', # Optional: Default is SERVER_URL
-        'BASE_URL': '', # Optional: Default matches Keycloak's default '/auth'
+        'BASE_PATH': '', # Optional: Default matches Keycloak's default '/auth'
         'REALM': '<REALM_NAME>',
         'CLIENT_ID': '<CLIENT_ID>',
         'CLIENT_SECRET_KEY': '<CLIENT_SECRET_KEY>',
@@ -43,14 +44,14 @@ This package should only be used in projects starting from scratch, since it ove
         'GRAPHQL_ENDPOINT': 'graphql/'  # Default graphQL endpoint
     }
     ```
+
 6. Override the Django user model in the `settings` file:
- 
+
      ```python
     AUTH_USER_MODEL = "django_keycloak.KeycloakUserAutoId"
     ```
 
 7. If you are using Graphene, add the `GRAPHQL_ENDPOINT` to settings and `KeycloakGrapheneMiddleware` to the Graphene's `MIDDLEWARE`.
-    
 
 8. Configure Django-Rest-Framework authentication classes with `django_keycloak.authentication.KeycloakAuthentication`:
 
@@ -71,8 +72,20 @@ This package should only be used in projects starting from scratch, since it ove
         'TEST_REQUEST_DEFAULT_FORMAT': 'json'
     }
     ```
-    
+
+## Customization
+
+### Server URLs
+
+To customise Keycloak's URL path, set `BASE_PATH` (for example `/my_path` or `/`) as follows:
+
+* `SERVER_URL/auth/admin/...` to `SERVER_URL/my_path/admin/...`
+* `SERVER_URL/auth/realms/...` to `SERVER_URL/realms/...`
+
+If your OAuth clients (web or mobile app) use a different URL than your Django service, sepcify the public URL (`https://oauth.example.com`) in `SERVER_URL` and the internal URL (`http://keycloak.local`) in `INTERNAL_URL`.
+
 ## DRY Permissions
+
 The permissions must be set like in other projects. You must set the
 permissions configuration for each model. Example:
 
@@ -89,9 +102,9 @@ def has_read_permission(request):
 
 The management command `sync_keycloak_users` must be ran periodically, in
 order to remove from the users no longer available at
-Keycloak from the local users. This command can be called using the task named 
+Keycloak from the local users. This command can be called using the task named
 `sync_users_with_keycloak`, using Celery. Fot that, you just need to:
- 
+
 * Add the task to the `CELERY_BEAT_SCHEDULE` ìn the Django project's settings:
 
   ```python
