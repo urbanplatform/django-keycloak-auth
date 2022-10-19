@@ -82,7 +82,7 @@ To customise Keycloak's URL path, set `BASE_PATH` (for example `/my_path` or `/`
 * `SERVER_URL/auth/admin/...` to `SERVER_URL/my_path/admin/...`
 * `SERVER_URL/auth/realms/...` to `SERVER_URL/realms/...`
 
-If your OAuth clients (web or mobile app) use a different URL than your Django service, sepcify the public URL (`https://oauth.example.com`) in `SERVER_URL` and the internal URL (`http://keycloak.local`) in `INTERNAL_URL`.
+If your OAuth clients (web or mobile app) use a different URL than your Django service, specify the public URL (`https://oauth.example.com`) in `SERVER_URL` and the internal URL (`http://keycloak.local`) in `INTERNAL_URL`.
 
 ## DRY Permissions
 
