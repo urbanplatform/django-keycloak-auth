@@ -32,7 +32,8 @@ This package should only be used in projects starting from scratch, since it ove
     ```python
     KEYCLOAK_CONFIG = {
         'SERVER_URL': '<PUBLIC_SERVER_URL>',
-        'INTERNAL_URL': '<INTERNAL_SERVER_URL>',
+        'INTERNAL_URL': '<INTERNAL_SERVER_URL>', # Optional: Default is SERVER_URL
+        'BASE_URL': '', # Optional: Default matches Keycloak's default '/auth'
         'REALM': '<REALM_NAME>',
         'CLIENT_ID': '<CLIENT_ID>',
         'CLIENT_SECRET_KEY': '<CLIENT_SECRET_KEY>',

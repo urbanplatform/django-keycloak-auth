@@ -1,3 +1,4 @@
+# KEYCLOAK SERVER
 BASE_PATH = "/auth"
 
 # REST API
