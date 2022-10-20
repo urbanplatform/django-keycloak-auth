@@ -82,6 +82,39 @@ This package should only be used in projects starting from scratch, since it ove
         'TEST_REQUEST_DEFAULT_FORMAT': 'json'
     }
     ```
+    
+## Keycloak Integration
+
+As soon as all services are up and running, log in to Keycloak's admin page using the administrator credentials. When inside Keycloak, go to the clients' section and create a new client. You must set the `Client ID` (in this example, we call it `backend`) and the Root URL. The Root URL can be a local instance or an already deployed one:
+
+![image](https://user-images.githubusercontent.com/115562920/196928807-2f229d68-32ea-440e-9015-7afb9b5ba0f3.png)
+
+In the next stage, already inside the created client, change the access type to `confidential` and save those changes:
+
+![image](https://user-images.githubusercontent.com/115562920/196928214-52fcff74-d8da-4f4b-a5ab-e06b4e05fbd4.png)
+
+Inside the client, Open the `Mappers` tab and add the following:
+
+![image](https://user-images.githubusercontent.com/115562920/196929534-37e50d85-73db-4932-bc27-476712dd7fb3.png)
+
+Only the client roles are needed for the Django Admin authorization, but the other ones can be convenient, feel free to add them.
+
+The last step inside the client settings' configuration is to get the `SECRET_KEY` used in the Django Project configuration alongside the client ID. This secret is already created and can be updated inside the `Credentials` section. Bear in mind that every time this attribute is updated, the Django Project configuration must also be updated:
+
+![image](https://user-images.githubusercontent.com/115562920/196930157-fd0737c6-1d55-4c59-b132-93b7b38e12ee.png)
+
+The next step is the creation of user(s). Here, we can create not only the users that will have access to the _Django Admin_ panel but also the ones using the Django APIs. Access the `Users` section and add a new user. **Don't forget to check the email as verified**:
+
+![image](https://user-images.githubusercontent.com/115562920/196930712-84113349-2df1-4848-ba07-b35640d9e249.png)
+
+To set up the user credentials, you must enter the `Credentials` section and set the password. **Don't forget to remove the `Temporary` option**:
+
+![image](https://user-images.githubusercontent.com/115562920/196930838-367ed6af-66bf-43a3-b0b8-c073c1192339.png)
+
+Finally, if this user needs to access your Django application's admin interface, we need to add them to the client role that was previously created (`admin`) for your Django application, i.e. the client (`backend`):
+
+![image](https://user-images.githubusercontent.com/115562920/196931388-7044f09f-a7c0-4f96-aa15-5d97ee0e2bf2.png)
+
 
 ## Customization
 
