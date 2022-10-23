@@ -1,90 +1,31 @@
+"""
+Module containing custom object managers
+"""
 from django.contrib.auth.models import UserManager
-from django.utils import timezone
-
-from django_keycloak.keycloak import Connect
+from django_keycloak import Token
 
 
 class KeycloakUserManager(UserManager):
-    def __init__(self, *args, **kwargs):
-        self.keycloak = Connect()
-        super().__init__(*args, **kwargs)
-
-    def _create_user_on_keycloak(
-        self,
-        username,
-        email,
-        password=None,
-        first_name=None,
-        last_name=None,
-        enabled=True,
-        actions=None,
-    ):
-        """Creates user on keycloak server, No state is changed on local db"""
-        keycloak = Connect()
-        values = {"username": username, "email": email, "enabled": enabled}
-        if password is not None:
-            values["credentials"] = [
-                {"type": "password", "value": password, "temporary": False}
-            ]
-        if first_name is not None:
-            values["firstName"] = first_name
-        if last_name is not None:
-            values["lastName"] = last_name
-        if actions is not None:
-            values["requiredActions"] = actions
-        keycloak.create_user(**values)
-        return keycloak.get_users(username=username)[0]
-
-    def create_user(self, username, password=None, **kwargs):
+    def create_from_token(self, token: Token, **kwargs):
         """
-        Creates a local user if the user exists on keycloak
+        Create a new local database user from a valid token.
         """
-        token = self.keycloak.get_token_from_credentials(username, password).get(
-            "access_token"
-        )
-        if token is None:
-            raise ValueError("Wrong credentials")
-        user = self.create_from_token(token, password)
-        return user
 
-    def create_superuser(self, username, password=None, **kwargs):
-        """
-        Creates a local super user if the user exists on keycloak and is superuser
-        """
-        token = self.keycloak.get_token_from_credentials(username, password).get(
-            "access_token"
-        )
-        if token is None:
-            raise ValueError("Wrong credentials")
-        if not self.keycloak.has_superuser_perm(token):
-            raise ValueError("You are not an administrator")
-
-        user = self.create_from_token(token, password)
-        user.save(using=self._db)
-        return user
-
-    def create_from_token(self, token, password=None, **kwargs):
-        """
-        Create a new user from a valid token
-        """
-        if not self.keycloak.is_token_active(token):
-            raise ValueError("Invalid token")
-
-        user_info = self.keycloak.get_user_info(token)
+        # Get user info from token
+        user_info = token.user_info
 
         # set admin permissions if user is admin
-        is_staff = False
-        is_superuser = False
-        if self.keycloak.has_superuser_perm(token):
-            is_staff = True
-            is_superuser = True
+        if token.superuser:
+            is_staff = is_superuser = True
+        else:
+            is_staff = is_superuser = False
 
+        # Create the django user from the token information
         user = self.model(
             id=user_info.get("sub"),
             username=user_info.get("preferred_username"),
             is_staff=is_staff,
             is_superuser=is_superuser,
-            date_joined=timezone.now(),
             **kwargs
         )
         user.save(using=self._db)
@@ -93,31 +34,22 @@ class KeycloakUserManager(UserManager):
     def get_by_keycloak_id(self, keycloak_id):
         return self.get(id=keycloak_id)
 
-    def create_keycloak_user(self, *args, **kwargs):
-        keycloak_user = self._create_user_on_keycloak(*args, **kwargs)
-        return self.create(
-            id=keycloak_user.get("id"),
-            username=keycloak_user.get("username"),
-        )
-
 
 class KeycloakUserManagerAutoId(KeycloakUserManager):
-    def create_from_token(self, token, password=None, **kwargs):
+    def create_from_token(self, token: Token, **kwargs):
         """
-        Create a new user from a valid token
+        Create a local new user from a valid token
         """
-        if not self.keycloak.is_token_active(token):
-            raise ValueError("Invalid token")
 
-        user_info = self.keycloak.get_user_info(token)
+        user_info = token.user_info
 
         # set admin permissions if user is admin
-        is_staff = False
-        is_superuser = False
-        if self.keycloak.has_superuser_perm(token):
-            is_staff = True
-            is_superuser = True
+        if token.superuser:
+            is_staff = is_superuser = True
+        else:
+            is_staff = is_superuser = False
 
+        # Create the django user from the token information
         user = self.model(
             keycloak_id=user_info.get("sub"),
             username=user_info.get("preferred_username"),
@@ -126,18 +58,13 @@ class KeycloakUserManagerAutoId(KeycloakUserManager):
             email=user_info.get("email"),
             is_staff=is_staff,
             is_superuser=is_superuser,
-            date_joined=timezone.now(),
             **kwargs
         )
         user.save(using=self._db)
         return user
 
     def get_by_keycloak_id(self, keycloak_id):
+        """
+        Returns a local user by keycloak id
+        """
         return self.get(keycloak_id=keycloak_id)
-
-    def create_keycloak_user(self, *args, **kwargs):
-        keycloak_user = self._create_user_on_keycloak(*args, **kwargs)
-        return self.create(
-            username=keycloak_user.get("username"),
-            keycloak_id=keycloak_user.get("id"),
-        )

@@ -1,10 +1,12 @@
-from django.conf import settings
+"""
+Module to register models into Django admin dashboard.
+"""
 from django.contrib import admin
 from django.contrib.auth import get_user_model
 from django.utils.html import format_html
 from django.utils.translation import gettext_lazy as _
 
-from django_keycloak.urls import BASE_PATH, KEYCLOAK_ADMIN_USER_PAGE
+from django_keycloak.config import settings
 
 User = get_user_model()
 
@@ -31,15 +33,17 @@ class UserAdmin(admin.ModelAdmin):
     search_fields = ["username", "email"]
 
     def keycloak_link(self, obj):
-        config = settings.KEYCLOAK_CONFIG
-        label = obj.id
-        base_path = config.get("BASE_PATH", BASE_PATH)
-        host = f"{config.get('SERVER_URL')}{base_path}"
-        link = KEYCLOAK_ADMIN_USER_PAGE.format(
-            host=host, realm=config.get("REALM"), id=label
-        )
+
+        base_path = settings.BASE_PATH
+        server = settings.SERVER_URL
+        realm = settings.REALM
+
+        link = f"{server}{base_path}/admin/master/console/#/{realm}/users/{obj.keycloak_identifier}/settings"
+
         return format_html(
-            '<a href="{link}" target="_blank">{label}</a>', link=link, label=label
+            '<a href="{link}" target="_blank">{label}</a>',
+            link=link,
+            label=obj.keycloak_identifier,
         )
 
     keycloak_link.short_description = _("keycloak link")

@@ -1,5 +1,5 @@
 import logging
-from django_keycloak.keycloak import Connect
+from django_keycloak.connector import KeycloakAdminConnector
 
 
 class KeycloakTestMixin:
@@ -33,11 +33,12 @@ class KeycloakTestMixin:
         self.keycloak_cleanup()
 
     def keycloak_init(self):
-        self.keycloak = Connect()
-        self._start_users = {user.get("id") for user in self.keycloak.get_users()}
+        self._start_users = {
+            user.get("id") for user in KeycloakAdminConnector.get_users()
+        }
 
     def keycloak_cleanup(self):
-        new_users = {user.get("id") for user in self.keycloak.get_users()}
+        new_users = {user.get("id") for user in KeycloakAdminConnector.get_users()}
         users_to_remove = new_users.difference(self._start_users)
         for user_id in users_to_remove:
-            self.keycloak.delete_user(user_id)
+            KeycloakAdminConnector.delete_user(user_id)

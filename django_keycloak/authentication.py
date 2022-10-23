@@ -1,9 +1,13 @@
+"""
+Custom authentication class for Django Rest Framework.
+"""
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import AnonymousUser
-from rest_framework import exceptions, HTTP_HEADER_ENCODING
+from rest_framework import HTTP_HEADER_ENCODING
 from rest_framework.authentication import BaseAuthentication
+from rest_framework.exceptions import AuthenticationFailed
 
-from django_keycloak.keycloak import Connect
+from django_keycloak import Token
 
 
 class KeycloakAuthentication(BaseAuthentication):
@@ -12,9 +16,6 @@ class KeycloakAuthentication(BaseAuthentication):
     """
 
     authenticate_header = "Bearer"
-
-    def __init__(self):
-        self.keycloak = Connect()
 
     @staticmethod
     def get_authorization_header(request):
@@ -42,18 +43,23 @@ class KeycloakAuthentication(BaseAuthentication):
         """
         auth_header = self.get_authorization_header(request)
 
-        if auth_header:
-            token = self.get_token(request)
-            if token:
-                try:
-                    user = get_user_model().objects.get_by_keycloak_id(
-                        self.keycloak.get_user_id(token)
-                    )
-                except get_user_model().DoesNotExist:
-                    raise exceptions.AuthenticationFailed("Invalid or expired token.")
+        # If request does not contain an authorization header, return
+        # an anonymous user
+        if not auth_header:
+            return AnonymousUser(), None
 
-                return user, token
-        return AnonymousUser(), None
+        # Otherwise try to create a "Token" object from the request token
+        token = Token.from_access_token(self.get_token(request))
+        # If token is None it is not valid, immediately return error
+        # avoid the database query
+        if not token:
+            raise AuthenticationFailed
+
+        # Get the associated user by keycloak id
+        user = get_user_model().objects.get_by_keycloak_id(token.user_id)
+
+        # Return the user and the associated access token
+        return user, token.access_token
 
     def authenticate_header(self, request):
         """

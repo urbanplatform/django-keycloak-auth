@@ -1,26 +1,38 @@
+"""
+Module containing custom middleware to authenticate, create and
+sync user information between keycloak and local database.
+"""
 import logging
 import re
-
+from typing import Union
 from django.contrib.auth import get_user_model
-from django.http.response import JsonResponse
+from django.http import JsonResponse
 from django.utils.deprecation import MiddlewareMixin
+from django_keycloak.models import KeycloakUserAutoId, KeycloakUser
+from django_keycloak import Token
+from django_keycloak.config import settings
 
-from django_keycloak.keycloak import Connect
-from django_keycloak.models import KeycloakUserAutoId
+# Create a reusable no permission JSON response with 401 status code
+NO_PERMISSION = lambda: JsonResponse(
+    {"detail": "Invalid credentials provided to perform this action."},
+    status=401,
+)
 
 
 class KeycloakMiddlewareMixin:
-    def append_user_info_to_request(self, request, token):
+    def append_user_info_to_request(self, request, token: Token):
         """Appends user info to the request"""
 
         if hasattr(request, "remote_user"):
             return request
 
-        user_info = self.keycloak.get_user_info(token)
+        user_info = token.user_info
+
+        # add the remote user to request
         request.remote_user = {
-            "client_roles": self.keycloak.client_roles(token),
-            "realm_roles": self.keycloak.realm_roles(token),
-            "client_scope": self.keycloak.client_scope(token),
+            "client_roles": token.client_roles,
+            "realm_roles": token.realm_roles,
+            "client_scope": token.client_scopes,
             "name": user_info.get("name"),
             "given_name": user_info.get("given_name"),
             "family_name": user_info.get("family_name"),
@@ -29,11 +41,12 @@ class KeycloakMiddlewareMixin:
             "email_verified": user_info.get("email_verified"),
         }
 
+        # Get the user model
+        User: Union[KeycloakUser, KeycloakUserAutoId] = get_user_model()  # type: ignore
+
         # Create or update user info
         try:
-            user = get_user_model().objects.get_by_keycloak_id(
-                self.keycloak.get_user_id(token)
-            )
+            user = User.objects.get_by_keycloak_id(token.user_id)
 
             # Only KeycloakUserAutoId stores the user details locally
             if isinstance(user, KeycloakUserAutoId):
@@ -42,8 +55,10 @@ class KeycloakMiddlewareMixin:
                 user.email = user_info.get("email")
                 user.save()
 
-        except get_user_model().DoesNotExist:
-            user = get_user_model().objects.create_from_token(token)
+        except User.DoesNotExist:
+            user = User.objects.create_from_token(token)
+
+        # Add the local user to request
         request.user = user
 
         return request
@@ -57,9 +72,9 @@ class KeycloakMiddlewareMixin:
     def get_token(request):
         """Get the token from the HTTP request"""
         auth_header = request.META.get("HTTP_AUTHORIZATION").split()
-        if len(auth_header) == 2:
+        if len(auth_header) > 1:
             return auth_header[1]
-        return None
+        return auth_header[0]
 
 
 class KeycloakGrapheneMiddleware(KeycloakMiddlewareMixin):
@@ -71,7 +86,6 @@ class KeycloakGrapheneMiddleware(KeycloakMiddlewareMixin):
         logging.warning(
             "All functionality is provided by KeycloakMiddleware", DeprecationWarning, 2
         )
-        self.keycloak = Connect()
 
     def resolve(self, next, root, info, **kwargs):
         """
@@ -80,17 +94,17 @@ class KeycloakGrapheneMiddleware(KeycloakMiddlewareMixin):
         request = info.context
 
         if self.is_auth_header_missing(request):
-            """Append anonymous user and continue"""
+            # Append anonymous user and continue
             return next(root, info, **kwargs)
 
-        token = self.get_token(request)
-        if token is None:
-            raise Exception("Invalid token structure. Must be 'Bearer <token>'")
+        # Build token from request
+        token = Token.from_access_token(self.get_token(request))
 
-        if not self.keycloak.is_token_active(token):
-            raise Exception("Invalid or expired token.")
+        # Check if Token was created
+        if not token:
+            return NO_PERMISSION()
 
-        info.context = self.append_user_info_to_request(request, token)
+        info.context = self.append_user_info_to_request(request, token.access_token)
 
         return next(root, info, **kwargs)
 
@@ -104,7 +118,6 @@ class KeycloakMiddleware(KeycloakMiddlewareMixin, MiddlewareMixin):
     async_capable = False
 
     def __init__(self, get_response):
-        self.keycloak = Connect()
 
         # Django response
         self.get_response = get_response
@@ -113,24 +126,28 @@ class KeycloakMiddleware(KeycloakMiddlewareMixin, MiddlewareMixin):
         """
         To be executed before the view each request
         """
-        # Skip auth for gql endpoint (it is done in KeycloakGrapheneMiddleware)
-        if self.is_graphql_endpoint(request):
+        # Skip auth in the following cases:
+        # 1. It is a graphql endpoint (handled by KeycloakGrapheneMiddleware)
+        # 2. It is a URL in "EXEMPT_URIS"
+        # 3. Request does not contain authorization header
+        # Also skip auth for "EXEMPT_URIS" defined in configs
+        if (
+            self.is_graphql_endpoint(request)
+            or self.pass_auth(request)
+            or self.is_auth_header_missing(request)
+        ):
             return self.get_response(request)
 
-        if not self.is_auth_header_missing(request):
-            token = self.get_token(request)
-            if token is None:
-                return JsonResponse(
-                    {"detail": "Invalid token structure. Must be 'Bearer <token>'"},
-                    status=401,
-                )
+        # Otherwise validate the token
+        token = Token.from_access_token(self.get_token(request))
 
-            if not self.keycloak.is_token_active(token):
-                return JsonResponse(
-                    {"detail": "Invalid or expired token."},
-                    status=401,
-                )
-            request = self.append_user_info_to_request(request, token)
+        # If token is None, access token was not valid
+        if not token:
+            return NO_PERMISSION()
+
+        # Add user info to request for a valid token
+        request = self.append_user_info_to_request(request, token)
+
         return self.get_response(request)
 
     def pass_auth(self, request):
@@ -138,17 +155,20 @@ class KeycloakMiddleware(KeycloakMiddlewareMixin, MiddlewareMixin):
         Check if the current URI path needs to skip authorization
         """
         path = request.path_info.lstrip("/")
-        return any(re.match(m, path) for m in self.keycloak.exempt_uris)
+        exempt_uris = settings.EXEMPT_URIS
+
+        return any(re.match(m, path) for m in exempt_uris)
 
     def is_graphql_endpoint(self, request):
         """
         Check if the request path belongs to a graphql endpoint
         """
-        if self.keycloak.graphql_endpoint is None:
+        graphql_endpoint = settings.GRAPHQL_ENDPOINT
+        if graphql_endpoint is None:
             return False
 
         path = request.path_info.lstrip("/")
-        is_graphql_endpoint = re.match(self.keycloak.graphql_endpoint, path)
+        is_graphql_endpoint = re.match(graphql_endpoint, path)
         if is_graphql_endpoint and request.method != "GET":
             return True
 

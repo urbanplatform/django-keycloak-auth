@@ -1,38 +1,67 @@
+"""
+Module containing custom Django authentication backends.
+"""
+from typing import Optional, Union
 from django.contrib.auth.backends import RemoteUserBackend
 from django.contrib.auth import get_user_model
-from django_keycloak.keycloak import Connect
 from django_keycloak.models import KeycloakUserAutoId
+from django_keycloak import Token
+from django_keycloak.models import KeycloakUser, KeycloakUserAutoId
 
 
 class KeycloakAuthenticationBackend(RemoteUserBackend):
-    def authenticate(self, request, username=None, password=None):
-        keycloak = Connect()
-        token = keycloak.get_token_from_credentials(username, password).get(
-            "access_token"
-        )
-        User = get_user_model()
-        if not keycloak.is_token_active(token):
+    """
+    Custom remote backend for Keycloak
+    """
+
+    def authenticate(
+        self,
+        request,
+        username: Optional[str] = None,
+        password: Optional[str] = None,
+    ):
+        """
+        Authenticates an user by credentials, and
+        updates it's information (first name, last name, email).
+        If user does not exist it is created with appropriate permissions.
+        """
+
+        # Create token from the provided credentials and check if
+        # credentials were valid
+        token = Token.from_credentials(username, password)  # type: ignore
+
+        # Check for non-existing or unactive token
+        if (not token) or (not token.active):
+            # credentials were not valid
             return
+
+        # Get the user model
+        User: Union[KeycloakUser, KeycloakUserAutoId] = get_user_model()  # type: ignore
+
+        # try to get user from database
         try:
             user = User.objects.get(username=username)
             if isinstance(user, KeycloakUserAutoId):
-                # Get user info based on token
-                user_info = keycloak.get_user_info(token)
+                # Get user information from token
+                user_info = token.user_info
 
-                # Get user info and update
+                # Update local user information based on Keycloak
+                # information from token
                 user.first_name = user_info.get("given_name")
                 user.last_name = user_info.get("family_name")
                 user.email = user_info.get("email")
-        except User.DoesNotExist:
-            user = User.objects.create_user(username, password)
-        if keycloak.has_superuser_perm(token):
-            user.is_staff = True
-            user.is_superuser = True
-        else:
-            user.is_staff = False
-            user.is_superuser = False
-        user.save()
 
+        except User.DoesNotExist:
+            # If user does not exist create in database
+            # `create_from_token` takes cares of password hashing
+            user = User.objects.create_from_token(username, password)
+
+        if token.superuser:
+            user.is_staff = user.is_superuser = True
+        else:
+            user.is_staff = user.is_superuser = False
+
+        user.save()
         return user
 
     def get_user(self, user_identifier):
