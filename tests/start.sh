@@ -26,8 +26,19 @@ KEYCLOAK_TOKEN_RESPONSE=$(curl -s \
 echo "$KEYCLOAK_TOKEN_RESPONSE"
 KEYCLOAK_TOKEN=$(echo "$KEYCLOAK_TOKEN_RESPONSE" | jq -r .access_token)
 echo "$KEYCLOAK_TOKEN"
+
+# Get Keycloak server version to add the right config file
+KEYCLOAK_VERSION="$(curl -v -X GET -H "Content-Type: application/json" -H "Authorization: bearer $KEYCLOAK_TOKEN" "$KEYCLOAK_URL/auth/admin/serverinfo" | jq '.systemInfo.version')"
+echo "Keycloak version: $KEYCLOAK_VERSION"
+VERSION_MAJOR="$(echo $KEYCLOAK_VERSION | tr -d \" | cut -d . -f 1)"
+if [ $VERSION_MAJOR -le 14 ]; then
+  REALM_FILE="realm-export-13-14.json"
+else
+  REALM_FILE="realm-export.json"
+fi
+
 # Combine the realm and user config and send it to the Keycloak server
-HTTP_CODE=$(curl -X POST --data-binary "@realm-export.json" \
+HTTP_CODE=$(curl -X POST --data-binary "@$REALM_FILE" \
     -s -o /dev/null -w "%{http_code}" \
     -H "Content-Type: application/json" \
     -H "Authorization: bearer $KEYCLOAK_TOKEN" \
