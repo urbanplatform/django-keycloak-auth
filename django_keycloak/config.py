@@ -6,8 +6,6 @@ from typing import Optional, List
 from django.conf import settings as django_settings
 
 # Get settings
-
-
 @dataclass
 class Settings:
     SERVER_URL: str
@@ -20,6 +18,7 @@ class Settings:
     INTERNAL_URL: Optional[str] = None
     BASE_PATH: Optional[str] = ""
     GRAPHQL_ENDPOINT: Optional[str] = "graphql/"
+    DECODE_TOKEN: Optional[bool] = False
 
     def __init__(self, **vars) -> None:
 

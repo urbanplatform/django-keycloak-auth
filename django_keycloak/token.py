@@ -54,6 +54,30 @@ class Token:
     # Helpers methods
 
     @staticmethod
+    def get_token_info(access_token: str) -> dict:
+        """
+        Gets the information from a token either using token decode
+        or introspect, depending on `DECODE_TOKEN` setting.
+        """
+        # If user enabled `DECODE_TOKEN` using local decoding
+        if settings.DECODE_TOKEN:
+            return KEYCLOAK.decode_token(
+                access_token,
+                key=(
+                    "-----BEGIN PUBLIC KEY-----\n"
+                    + KEYCLOAK.public_key()
+                    + "\n-----END PUBLIC KEY-----"
+                ),
+                options={
+                    "verify_signature": True,
+                    "verify_aud": False,
+                    "verify_exp": True,
+                },
+            )
+        # Otherwise hit the Keycloak API for info
+        return KEYCLOAK.introspect(access_token)
+
+    @staticmethod
     def _parse_keycloak_response(keycloak_response: dict) -> dict:
         """
         Builds a dictionary mapping internal values to keycloak API
@@ -108,7 +132,7 @@ class Token:
         Returns the client roles based on the provided access token.
         """
         return (
-            KEYCLOAK.introspect(self.access_token)
+            Token.get_token_info(self.access_token)
             .get("resource_access")
             .get(settings.CLIENT_ID)
             .get("roles", [])
@@ -120,7 +144,7 @@ class Token:
         Returns the realm roles based on the access token.
         """
         return (
-            KEYCLOAK.introspect(self.access_token)
+            Token.get_token_info(self.access_token)
             .get("realm_access", {})
             .get("roles", [])
         )
@@ -130,7 +154,7 @@ class Token:
         """
         Returns the client scope based on the  access token.
         """
-        return KEYCLOAK.introspect(self.access_token).get("scope", "").split(" ")
+        return Token.get_token_info(self.access_token).get("scope", "").split(" ")
 
     # Methods
 
