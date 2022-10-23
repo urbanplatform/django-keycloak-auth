@@ -21,8 +21,10 @@ NO_PERMISSION = lambda: JsonResponse(
 
 class KeycloakMiddlewareMixin:
     def append_user_info_to_request(self, request, token: Token):
-        """Appends user info to the request"""
-
+        """
+        Appends user info to the request
+        """
+        # Check if already appended in a previous request
         if hasattr(request, "remote_user"):
             return request
 
@@ -114,17 +116,9 @@ class KeycloakMiddleware(KeycloakMiddlewareMixin, MiddlewareMixin):
     Middleware to validate Keycloak access based on REST validations
     """
 
-    sync_capable = True
-    async_capable = False
-
-    def __init__(self, get_response):
-
-        # Django response
-        self.get_response = get_response
-
-    def __call__(self, request):
+    def process_request(self, request):
         """
-        To be executed before the view each request
+        To be executed before the view each request.
         """
         # Skip auth in the following cases:
         # 1. It is a graphql endpoint (handled by KeycloakGrapheneMiddleware)
@@ -136,19 +130,17 @@ class KeycloakMiddleware(KeycloakMiddlewareMixin, MiddlewareMixin):
             or self.pass_auth(request)
             or self.is_auth_header_missing(request)
         ):
-            return self.get_response(request)
+            return
 
         # Otherwise validate the token
-        token = Token.from_access_token(self.get_token(request))
+        token = Token.from_access_token(KeycloakMiddleware.get_token(request))
 
         # If token is None, access token was not valid
         if not token:
             return NO_PERMISSION()
 
         # Add user info to request for a valid token
-        request = self.append_user_info_to_request(request, token)
-
-        return self.get_response(request)
+        self.append_user_info_to_request(request, token)
 
     def pass_auth(self, request):
         """

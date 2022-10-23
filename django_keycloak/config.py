@@ -1,12 +1,11 @@
 """
 Module to interact with django settings
 """
+from dataclasses import dataclass, field
+from typing import Optional, List
 from django.conf import settings as django_settings
 
 # Get settings
-
-from dataclasses import dataclass, field
-from typing import Optional, List
 
 
 @dataclass
