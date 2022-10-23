@@ -140,7 +140,7 @@ class KeycloakMiddleware(KeycloakMiddlewareMixin, MiddlewareMixin):
             return NO_PERMISSION()
 
         # Add user info to request for a valid token
-        self.append_user_info_to_request(request, token)
+        return self.append_user_info_to_request(request, token)
 
     def pass_auth(self, request):
         """
