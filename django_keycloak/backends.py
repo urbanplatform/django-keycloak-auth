@@ -54,7 +54,7 @@ class KeycloakAuthenticationBackend(RemoteUserBackend):
         except User.DoesNotExist:
             # If user does not exist create in database
             # `create_from_token` takes cares of password hashing
-            user = User.objects.create_from_token(username, password)
+            user = User.objects.create_from_token(token)
 
         if token.superuser:
             user.is_staff = user.is_superuser = True
