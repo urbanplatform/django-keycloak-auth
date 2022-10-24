@@ -18,7 +18,10 @@ class Settings:
     INTERNAL_URL: Optional[str] = None
     BASE_PATH: Optional[str] = ""
     GRAPHQL_ENDPOINT: Optional[str] = "graphql/"
+    # Flag if the token should be introspected or decoded
     DECODE_TOKEN: Optional[bool] = False
+    # The percentage of a tokens valid duration until a new token is requested
+    TOKEN_TIMEOUT_FACTOR: Optional[float] = 0.9
 
     def __init__(self, **vars) -> None:
 
@@ -27,9 +30,17 @@ class Settings:
 
 
 __desired_variables = Settings.__annotations__.keys()
-__defined_variables = getattr(django_settings, "KEYCLOAK_CONFIG", {})
+__defined_variables = getattr(
+    django_settings,
+    "KEYCLOAK_CONFIG",
+    {},
+)
 # Create a dict of the values of the settings defined in django
-__values = {key: __defined_variables.get(key) for key in __desired_variables}
+__values = {
+    key: __defined_variables.get(key)
+    for key in __desired_variables
+    if key in __defined_variables
+}
 
 # The exported settings object
 settings = Settings(**__values)

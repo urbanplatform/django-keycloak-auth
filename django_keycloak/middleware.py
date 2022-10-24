@@ -2,9 +2,10 @@
 Module containing custom middleware to authenticate, create and
 sync user information between keycloak and local database.
 """
+import base64
 import logging
 import re
-from typing import Union
+from typing import Union, Optional
 from django.contrib.auth import get_user_model
 from django.http import JsonResponse
 from django.utils.deprecation import MiddlewareMixin
@@ -20,6 +21,31 @@ NO_PERMISSION = lambda: JsonResponse(
 
 
 class KeycloakMiddlewareMixin:
+    def get_token_from_request(self, request) -> Optional[Token]:
+        """
+        Get the value of "HTTTP_AUTHORIZATION" request header.
+        If the authorization is "Bearer" it tries to produce a "Token"
+        instance from it.
+        If the authorization is "Basic" (username+password) it tries
+        to authenticate the user
+        """
+        auth_type, value = request.META.get("HTTP_AUTHORIZATION").split()
+
+        if auth_type == "Basic":
+            decoded_username, decoded_password = (
+                base64.b64decode(value).decode("utf-8").split(":")
+            )
+            # Try to build a Token instance from decoded credentials
+            token = Token.from_credentials(decoded_username, decoded_password)
+            if token:
+                # Convert the request "Basic" auth to "Bearer" with access token
+                request.META["HTTP_AUTHORIZATION"] = f"Bearer {token.access_token}"
+
+        elif auth_type == "Bearer":
+            token = Token.from_access_token(value)
+
+        return token
+
     def append_user_info_to_request(self, request, token: Token):
         """
         Appends user info to the request
@@ -66,13 +92,15 @@ class KeycloakMiddlewareMixin:
         return request
 
     @staticmethod
-    def is_auth_header_missing(request):
+    def has_auth_header(request) -> bool:
         """Check if exists an authentication header in the HTTP request"""
-        return "HTTP_AUTHORIZATION" not in request.META
+        return "HTTP_AUTHORIZATION" in request.META
 
     @staticmethod
     def get_token(request):
-        """Get the token from the HTTP request"""
+        """
+        Get the token from the HTTP request
+        """
         auth_header = request.META.get("HTTP_AUTHORIZATION").split()
         if len(auth_header) > 1:
             return auth_header[1]
@@ -95,18 +123,17 @@ class KeycloakGrapheneMiddleware(KeycloakMiddlewareMixin):
         """
         request = info.context
 
-        if self.is_auth_header_missing(request):
+        if self.has_auth_header(request):
             # Append anonymous user and continue
             return next(root, info, **kwargs)
 
-        # Build token from request
-        token = Token.from_access_token(self.get_token(request))
+        token: Union[Token, None] = self.get_token_from_request(request)
 
         # Check if Token was created
-        if not token:
-            return NO_PERMISSION()
-
-        info.context = self.append_user_info_to_request(request, token.access_token)
+        if token:
+            info.context = self.append_user_info_to_request(request, token.access_token)
+        else:
+            del request.META["HTTP_AUTHORIZATION"]
 
         return next(root, info, **kwargs)
 
@@ -128,19 +155,19 @@ class KeycloakMiddleware(KeycloakMiddlewareMixin, MiddlewareMixin):
         if (
             self.is_graphql_endpoint(request)
             or self.pass_auth(request)
-            or self.is_auth_header_missing(request)
+            or not self.has_auth_header(request)
         ):
             return
 
-        # Otherwise validate the token
-        token = Token.from_access_token(KeycloakMiddleware.get_token(request))
+        token: Union[Token, None] = self.get_token_from_request(request)
 
         # If token is None, access token was not valid
-        if not token:
-            return NO_PERMISSION()
-
-        # Add user info to request for a valid token
-        self.append_user_info_to_request(request, token)
+        if token:
+            # Add user info to request for a valid token
+            self.append_user_info_to_request(request, token)
+        # If token building failed delete the authorization header.
+        else:
+            del request.META["HTTP_AUTHORIZATION"]
 
     def pass_auth(self, request):
         """

@@ -2,6 +2,7 @@
 Module to interact with the Keycloak token API
 """
 from __future__ import annotations
+from datetime import datetime, timezone
 from typing import Any, Callable, TypeVar, cast, Optional
 from dataclasses import dataclass
 from keycloak.exceptions import KeycloakAuthenticationError, KeycloakPostError
@@ -48,10 +49,34 @@ KEYCLOAK = KeycloakOpenID(
 class Token:
     access_token: Optional[str] = None
     refresh_token: Optional[str] = None
-    expires_in: Optional[int] = None
-    refresh_expires_in: Optional[int] = None
 
     # Helpers methods
+
+    @staticmethod
+    def _introspect(access_token: str) -> dict:
+        """
+        Hits the Keycloak API for access token introspection
+        """
+        return KEYCLOAK.introspect(access_token)
+
+    @staticmethod
+    def _token_decode(access_token: str) -> dict:
+        """
+        Performs token decoding to extract token information
+        """
+        return KEYCLOAK.decode_token(
+            access_token,
+            key=(
+                "-----BEGIN PUBLIC KEY-----\n"
+                + KEYCLOAK.public_key()
+                + "\n-----END PUBLIC KEY-----"
+            ),
+            options={
+                "verify_signature": True,
+                "verify_aud": False,
+                "verify_exp": True,
+            },
+        )
 
     @staticmethod
     def get_token_info(access_token: str) -> dict:
@@ -61,21 +86,9 @@ class Token:
         """
         # If user enabled `DECODE_TOKEN` using local decoding
         if settings.DECODE_TOKEN:
-            return KEYCLOAK.decode_token(
-                access_token,
-                key=(
-                    "-----BEGIN PUBLIC KEY-----\n"
-                    + KEYCLOAK.public_key()
-                    + "\n-----END PUBLIC KEY-----"
-                ),
-                options={
-                    "verify_signature": True,
-                    "verify_aud": False,
-                    "verify_exp": True,
-                },
-            )
+            return Token._token_decode(access_token)
         # Otherwise hit the Keycloak API for info
-        return KEYCLOAK.introspect(access_token)
+        return Token._introspect(access_token)
 
     @staticmethod
     def _parse_keycloak_response(keycloak_response: dict) -> dict:
@@ -86,18 +99,24 @@ class Token:
         return {
             "access_token": keycloak_response["access_token"],
             "refresh_token": keycloak_response["refresh_token"],
-            "expires_in": keycloak_response["expires_in"],
-            "refresh_expires_in": keycloak_response["refresh_expires_in"],
         }
 
     # Properties
-
     @property
     def active(self):
         """
         Returns a boolean indicating if the current access token is active or not.
         """
-        return KEYCLOAK.introspect(self.access_token).get("active", False)
+        # Get token info via decode
+        tokeninfo = Token._token_decode(self.access_token)
+        expires_at = datetime.fromtimestamp(tokeninfo["exp"], tz=timezone.utc)
+        issued_at = datetime.fromtimestamp(tokeninfo["iat"], tz=timezone.utc)
+        now = datetime.now(tz=timezone.utc)
+        is_active = (
+            expires_at - issued_at
+        ) * settings.TOKEN_TIMEOUT_FACTOR + issued_at > now
+
+        return is_active
 
     @with_active_token_property
     def user_info(self) -> dict:
