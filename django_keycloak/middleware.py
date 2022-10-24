@@ -7,17 +7,10 @@ import logging
 import re
 from typing import Union, Optional
 from django.contrib.auth import get_user_model
-from django.http import JsonResponse
 from django.utils.deprecation import MiddlewareMixin
 from django_keycloak.models import KeycloakUserAutoId, KeycloakUser
 from django_keycloak import Token
 from django_keycloak.config import settings
-
-# Create a reusable no permission JSON response with 401 status code
-NO_PERMISSION = lambda: JsonResponse(
-    {"detail": "Invalid credentials provided to perform this action."},
-    status=401,
-)
 
 
 class KeycloakMiddlewareMixin:
@@ -40,6 +33,9 @@ class KeycloakMiddlewareMixin:
             if token:
                 # Convert the request "Basic" auth to "Bearer" with access token
                 request.META["HTTP_AUTHORIZATION"] = f"Bearer {token.access_token}"
+            else:
+                # Setup an invalid dummy bearer token
+                request.META["HTTP_AUTHORIZATION"] = "Bearer not-valid-token"
 
         elif auth_type == "Bearer":
             token = Token.from_access_token(value)
@@ -132,8 +128,6 @@ class KeycloakGrapheneMiddleware(KeycloakMiddlewareMixin):
         # Check if Token was created
         if token:
             info.context = self.append_user_info_to_request(request, token.access_token)
-        else:
-            del request.META["HTTP_AUTHORIZATION"]
 
         return next(root, info, **kwargs)
 
@@ -165,9 +159,6 @@ class KeycloakMiddleware(KeycloakMiddlewareMixin, MiddlewareMixin):
         if token:
             # Add user info to request for a valid token
             self.append_user_info_to_request(request, token)
-        # If token building failed delete the authorization header.
-        else:
-            del request.META["HTTP_AUTHORIZATION"]
 
     def pass_auth(self, request):
         """
