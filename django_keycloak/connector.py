@@ -33,13 +33,10 @@ try:
         client_secret_key=CLIENT_SECRET_KEY,
     )
 
-    # # Check for 403 unknown error (missing required roles)
-    # except if "unknown_error" in str(error):
-    #     raise KeycloakMissingServiceAccountRolesError(CLIENT_ID)
 except KeycloakAuthenticationError as error:
     # Check if the error is due to service account not being enabled
     if "Client not enabled to retrieve service account" in str(error):
-        raise KeycloakNoServiceAccountRolesError(CLIENT_ID)
+        raise KeycloakNoServiceAccountRolesError from error
 
     # Otherwise re-throw the original error
     else:
@@ -52,6 +49,6 @@ try:
     KeycloakAdminConnector.users_count()
 except KeycloakGetError as error:
     if "unknown_error" in str(error):
-        raise KeycloakMissingServiceAccountRolesError(CLIENT_ID)
+        raise KeycloakMissingServiceAccountRolesError from error
     else:
         raise error
