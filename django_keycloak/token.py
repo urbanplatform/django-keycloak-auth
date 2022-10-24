@@ -133,8 +133,8 @@ class Token:
         """
         return (
             Token.get_token_info(self.access_token)
-            .get("resource_access")
-            .get(settings.CLIENT_ID)
+            .get("resource_access", {})
+            .get(settings.CLIENT_ID, {})
             .get("roles", [])
         )
 
