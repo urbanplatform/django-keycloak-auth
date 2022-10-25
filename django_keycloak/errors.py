@@ -23,7 +23,7 @@ class KeycloakMissingSettingError(Exception):
         super().__init__(
             (
                 f"The following settings are missing: '{setting}' "
-                "Please add them in 'KEYCLOAK_CONFIG' inside Django settings",
+                "Please add them in 'KEYCLOAK_CONFIG' inside Django settings"
             )
         )
 
