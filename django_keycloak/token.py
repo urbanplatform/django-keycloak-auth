@@ -116,6 +116,7 @@ class Token:
             return info["active"]
         return True
 
+    @property
     def user_info(self) -> dict:
         """
         Returns the user information contained on the provided access token.
@@ -130,6 +131,7 @@ class Token:
             return self.get_access_token_info()
         return KEYCLOAK.userinfo(self.access_token)
 
+    @property
     def user_id(self) -> str:
         """
         Returns the Keycloak user id
@@ -138,7 +140,7 @@ class Token:
             JOSEError: On expired or invalid tokens
             KeycloakError: On expired / invalid tokens or Keycloak API errors
         """
-        return self.user_info().get("sub")  # type: ignore
+        return self.user_info.get("sub")  # type: ignore
 
     @property
     def is_superuser(self) -> bool:
@@ -149,13 +151,14 @@ class Token:
             JOSEError: On expired or invalid tokens
             KeycloakError: On expired / invalid tokens or Keycloak API errors
         """
-        if (settings.CLIENT_ADMIN_ROLE in self.client_roles()) or (  # type: ignore
-            settings.REALM_ADMIN_ROLE in self.realm_roles()
+        if (settings.CLIENT_ADMIN_ROLE in self.client_roles) or (  # type: ignore
+            settings.REALM_ADMIN_ROLE in self.realm_roles
         ):  # type: ignore
             return True
 
         return False
 
+    @property
     def client_roles(self) -> list:
         """
         Returns the client roles based on the provided access token.
@@ -171,6 +174,7 @@ class Token:
             .get("roles", [])
         )
 
+    @property
     def realm_roles(self) -> list:
         """
         Returns the realm roles based on the access token.
@@ -181,6 +185,7 @@ class Token:
         """
         return self.get_access_token_info().get("realm_access", {}).get("roles", [])
 
+    @property
     def client_scopes(self) -> list:
         """
         Returns the client scope based on the  access token.
