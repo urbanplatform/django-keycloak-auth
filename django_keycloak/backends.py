@@ -31,7 +31,7 @@ class KeycloakAuthenticationBackend(RemoteUserBackend):
         token = Token.from_credentials(username, password)  # type: ignore
 
         # Check for non-existing or unactive token
-        if (not token) or (not token.active):
+        if not token:
             # credentials were not valid
             return
 
@@ -56,7 +56,7 @@ class KeycloakAuthenticationBackend(RemoteUserBackend):
             # `create_from_token` takes cares of password hashing
             user = User.objects.create_from_token(token)
 
-        if token.superuser:
+        if token.is_superuser:
             user.is_staff = user.is_superuser = True
         else:
             user.is_staff = user.is_superuser = False
@@ -64,8 +64,8 @@ class KeycloakAuthenticationBackend(RemoteUserBackend):
         user.save()
         return user
 
-    def get_user(self, user_identifier):
-        User = get_user_model()
+    def get_user(self, user_identifier: str):
+        User: Union[KeycloakUser, KeycloakUserAutoId] = get_user_model()
         try:
             return User.objects.get(username=user_identifier)
         except User.DoesNotExist:

@@ -3,7 +3,6 @@ Module containing custom middleware to authenticate, create and
 sync user information between keycloak and local database.
 """
 import base64
-import logging
 import re
 from typing import Union, Optional
 from django.contrib.auth import get_user_model
@@ -13,7 +12,11 @@ from django_keycloak import Token
 from django_keycloak.config import settings
 
 
-class KeycloakMiddlewareMixin:
+class KeycloakMiddleware(MiddlewareMixin):
+    """
+    Middleware to validate Keycloak access based on REST validations
+    """
+
     def get_token_from_request(self, request) -> Optional[Token]:
         """
         Get the value of "HTTTP_AUTHORIZATION" request header.
@@ -22,7 +25,10 @@ class KeycloakMiddlewareMixin:
         If the authorization is "Basic" (username+password) it tries
         to authenticate the user
         """
-        auth_type, value = request.META.get("HTTP_AUTHORIZATION").split()
+        auth_type, value, *_ = request.META.get("HTTP_AUTHORIZATION").split()
+
+        if not auth_type or auth_type[0].lower() not in ["basic", "bearer"]:
+            return None
 
         if auth_type == "Basic":
             decoded_username, decoded_password = (
@@ -91,51 +97,6 @@ class KeycloakMiddlewareMixin:
     def has_auth_header(request) -> bool:
         """Check if exists an authentication header in the HTTP request"""
         return "HTTP_AUTHORIZATION" in request.META
-
-    @staticmethod
-    def get_token(request):
-        """
-        Get the token from the HTTP request
-        """
-        auth_header = request.META.get("HTTP_AUTHORIZATION").split()
-        if len(auth_header) > 1:
-            return auth_header[1]
-        return auth_header[0]
-
-
-class KeycloakGrapheneMiddleware(KeycloakMiddlewareMixin):
-    """
-    Middleware to validate Keycloak access based on Graphql validations
-    """
-
-    def __init__(self):
-        logging.warning(
-            "All functionality is provided by KeycloakMiddleware", DeprecationWarning, 2
-        )
-
-    def resolve(self, next, root, info, **kwargs):
-        """
-        Graphene Middleware to validate keycloak access
-        """
-        request = info.context
-
-        if self.has_auth_header(request):
-            # Append anonymous user and continue
-            return next(root, info, **kwargs)
-
-        token: Union[Token, None] = self.get_token_from_request(request)
-
-        # Check if Token was created
-        if token:
-            info.context = self.append_user_info_to_request(request, token.access_token)
-
-        return next(root, info, **kwargs)
-
-
-class KeycloakMiddleware(KeycloakMiddlewareMixin, MiddlewareMixin):
-    """
-    Middleware to validate Keycloak access based on REST validations
-    """
 
     def process_request(self, request):
         """

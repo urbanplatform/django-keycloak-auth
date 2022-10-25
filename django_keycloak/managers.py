@@ -15,7 +15,7 @@ class KeycloakUserManager(UserManager):
         user_info = token.user_info
 
         # set admin permissions if user is admin
-        if token.superuser:
+        if token.is_superuser:
             is_staff = is_superuser = True
         else:
             is_staff = is_superuser = False
@@ -44,7 +44,7 @@ class KeycloakUserManagerAutoId(KeycloakUserManager):
         user_info = token.user_info
 
         # set admin permissions if user is admin
-        if token.superuser:
+        if token.is_superuser:
             is_staff = is_superuser = True
         else:
             is_staff = is_superuser = False

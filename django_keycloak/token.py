@@ -140,7 +140,8 @@ class Token:
         """
         return self.user_info().get("sub")  # type: ignore
 
-    def has_superuser_perm(self) -> bool:
+    @property
+    def is_superuser(self) -> bool:
         """
         Check if token belongs to a user with superuser permissions
 
