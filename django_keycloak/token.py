@@ -2,93 +2,87 @@
 Module to interact with the Keycloak token API
 """
 from __future__ import annotations
-from datetime import datetime, timezone
-from typing import Any, Callable, TypeVar, cast, Optional
+
 from dataclasses import dataclass
-from keycloak.exceptions import KeycloakAuthenticationError, KeycloakPostError
+from typing import Optional
+
+from cachetools.func import ttl_cache
+from jose.exceptions import JOSEError
+from keycloak.exceptions import (
+    KeycloakAuthenticationError,
+    KeycloakError,
+    KeycloakPostError,
+)
 from keycloak.keycloak_openid import KeycloakOpenID
+
 from django_keycloak.config import settings
-
-F = TypeVar("F", bound=Callable[..., Any])
-
-
-def with_active_token_property(f: F) -> F:
-    @property
-    def wrapper(self, *args, **kwargs):
-        # Only allow the method if token is active
-        if not self.active:
-            return None
-        return f(self, *args, **kwargs)
-
-    return cast(F, wrapper)
-
-
-# Variables for parent constructor
-SERVER_URL = settings.SERVER_URL
-INTERNAL_URL = settings.INTERNAL_URL
-BASE_PATH = settings.BASE_PATH
-REAL_NAME = settings.REALM
-CLIENT_ID = settings.CLIENT_ID
-CLIENT_SECRET_KEY = settings.CLIENT_SECRET_KEY
-
-# Decide URL (internal url overrides serverl url)
-URL = INTERNAL_URL if INTERNAL_URL else SERVER_URL
-# Add base path
-URL += BASE_PATH
 
 # Define keycloak openid instance
 KEYCLOAK = KeycloakOpenID(
-    server_url=URL,
-    client_id=CLIENT_ID,
-    realm_name=REAL_NAME,
-    client_secret_key=CLIENT_SECRET_KEY,
+    server_url=settings.KEYCLOAK_URL,
+    client_id=settings.CLIENT_ID,
+    realm_name=settings.REALM,
+    client_secret_key=settings.CLIENT_SECRET_KEY,
 )
 
 
-@dataclass
 class Token:
-    access_token: Optional[str] = None
-    refresh_token: Optional[str] = None
+    def __init__(self, access_token=None, refresh_token=None):
+        self.access_token: Optional[str] = access_token
+        self.refresh_token: Optional[str] = refresh_token
 
-    # Helpers methods
+    @property
+    @ttl_cache(maxsize=1, ttl=60)
+    def public_key(self):
+        """
+        Formats the public
 
-    @staticmethod
-    def _introspect(access_token: str) -> dict:
+        Raises:
+            KeycloakError: On Keycloak API errors
         """
-        Hits the Keycloak API for access token introspection
-        """
-        return KEYCLOAK.introspect(access_token)
 
-    @staticmethod
-    def _token_decode(access_token: str) -> dict:
-        """
-        Performs token decoding to extract token information
-        """
-        return KEYCLOAK.decode_token(
-            access_token,
-            key=(
-                "-----BEGIN PUBLIC KEY-----\n"
-                + KEYCLOAK.public_key()
-                + "\n-----END PUBLIC KEY-----"
-            ),
-            options={
-                "verify_signature": True,
-                "verify_aud": False,
-                "verify_exp": True,
-            },
-        )
+        return f"-----BEGIN PUBLIC KEY-----\n{KEYCLOAK.public_key()}\n-----END PUBLIC KEY-----"
 
-    @staticmethod
-    def get_token_info(access_token: str) -> dict:
+    @ttl_cache(maxsize=1, ttl=60)
+    def get_access_token_info(self) -> dict:
         """
         Gets the information from a token either using token decode
         or introspect, depending on `DECODE_TOKEN` setting.
+
+        Raises:
+            JOSEError: On expired or invalid tokens
+            KeycloakError: On expired / invalid tokens or Keycloak API errors
         """
         # If user enabled `DECODE_TOKEN` using local decoding
         if settings.DECODE_TOKEN:
-            return Token._token_decode(access_token)
+            return KEYCLOAK.decode_token(
+                self.access_token,
+                key=self.public_key,
+                options={"verify_aud": settings.VERIFY_AUDIENCE},
+            )
         # Otherwise hit the Keycloak API for info
-        return Token._introspect(access_token)
+        return KEYCLOAK.introspect(self.access_token)
+
+    @ttl_cache(maxsize=1, ttl=60)
+    def get_refresh_token_info(self) -> dict:
+        """
+        Gets the information from a token either using token decode
+        or introspect, depending on `DECODE_TOKEN` setting.
+
+        Raises:
+            JOSEError: On expired or invalid tokens
+            KeycloakError: On expired / invalid tokens or Keycloak API errors
+        """
+        # If user enabled `DECODE_TOKEN` using local decoding
+        # If user enabled `DECODE_TOKEN` using local decoding
+        if settings.DECODE_TOKEN:
+            return KEYCLOAK.decode_token(
+                self.refresh_token,
+                key=self.public_key,
+                options={"verify_aud": settings.VERIFY_AUDIENCE},
+            )
+        # Otherwise hit the Keycloak API for info
+        return KEYCLOAK.introspect(self.refresh_token)
 
     @staticmethod
     def _parse_keycloak_response(keycloak_response: dict) -> dict:
@@ -97,46 +91,56 @@ class Token:
         values
         """
         return {
-            "access_token": keycloak_response["access_token"],
-            "refresh_token": keycloak_response["refresh_token"],
+            "access_token": keycloak_response.get("access_token"),
+            "refresh_token": keycloak_response.get("refresh_token"),
         }
 
     # Properties
     @property
-    def active(self):
+    def is_active(self) -> bool:
         """
         Returns a boolean indicating if the current access token is active or not.
         """
-        # Get token info via decode
-        tokeninfo = Token._token_decode(self.access_token)
-        expires_at = datetime.fromtimestamp(tokeninfo["exp"], tz=timezone.utc)
-        issued_at = datetime.fromtimestamp(tokeninfo["iat"], tz=timezone.utc)
-        now = datetime.now(tz=timezone.utc)
-        is_active = (
-            expires_at - issued_at
-        ) * settings.TOKEN_TIMEOUT_FACTOR + issued_at > now
+        try:
+            info = self.get_access_token_info()
+        except (JOSEError, KeycloakError):
+            return False
+        # Keycloak introspections return {"active": bool}
+        if "active" in info:
+            return info["active"]
+        return True
 
-        return is_active
-
-    @with_active_token_property
     def user_info(self) -> dict:
         """
         Returns the user information contained on the provided access token.
+
+        When DECODE_TOKEN and USER_INFO_IN_TOKEN are enabled the entire token is returned
+
+        Raises:
+            JOSEError: On expired or invalid tokens
+            KeycloakError: On expired / invalid tokens or Keycloak API errors
         """
+        if settings.DECODE_TOKEN and settings.USER_INFO_IN_TOKEN:
+            return self.get_access_token_info()
         return KEYCLOAK.userinfo(self.access_token)
 
-    @with_active_token_property
     def user_id(self) -> str:
         """
         Returns the Keycloak user id
-        """
-        return self.user_info.get("sub")  # type: ignore
 
-    @with_active_token_property
-    def superuser(self) -> bool:
+        Raises:
+            JOSEError: On expired or invalid tokens
+            KeycloakError: On expired / invalid tokens or Keycloak API errors
         """
-        Returns a boolean indicating if the user has admin
-        permissions
+        return self.user_info().get("sub")  # type: ignore
+
+    def has_superuser_perm(self) -> bool:
+        """
+        Check if token belongs to a user with superuser permissions
+
+        Raises:
+            JOSEError: On expired or invalid tokens
+            KeycloakError: On expired / invalid tokens or Keycloak API errors
         """
         if (settings.CLIENT_ADMIN_ROLE in self.client_roles) or (  # type: ignore
             settings.REALM_ADMIN_ROLE in self.realm_roles
@@ -145,35 +149,40 @@ class Token:
 
         return False
 
-    @with_active_token_property
     def client_roles(self) -> list:
         """
         Returns the client roles based on the provided access token.
+
+        Raises:
+            JOSEError: On expired or invalid tokens
+            KeycloakError: On expired / invalid tokens or Keycloak API errors
         """
         return (
-            Token.get_token_info(self.access_token)
+            Token.get_access_token_info()
             .get("resource_access", {})
             .get(settings.CLIENT_ID, {})
             .get("roles", [])
         )
 
-    @with_active_token_property
     def realm_roles(self) -> list:
         """
         Returns the realm roles based on the access token.
-        """
-        return (
-            Token.get_token_info(self.access_token)
-            .get("realm_access", {})
-            .get("roles", [])
-        )
 
-    @with_active_token_property
+        Raises:
+            JOSEError: On expired or invalid tokens
+            KeycloakError: On expired / invalid tokens or Keycloak API errors
+        """
+        return Token.get_access_token_info().get("realm_access", {}).get("roles", [])
+
     def client_scopes(self) -> list:
         """
         Returns the client scope based on the  access token.
+
+        Raises:
+            JOSEError: On expired or invalid tokens
+            KeycloakError: On expired / invalid tokens or Keycloak API errors
         """
-        return Token.get_token_info(self.access_token).get("scope", "").split(" ")
+        return Token.get_access_token_info().get("scope", "").split(" ")
 
     # Methods
 
@@ -198,7 +207,7 @@ class Token:
         Returns `None` if token is not active.
         """
         instance = cls(access_token=access_token)
-        return instance if instance.active else None
+        return instance if instance.is_active else None
 
     @classmethod
     def from_refresh_token(cls, refresh_token: str) -> Optional[Token]:
@@ -207,11 +216,14 @@ class Token:
         """
         instance = cls(refresh_token=refresh_token)
         instance.refresh()
-        return instance
+        return instance if instance.is_active else None
 
     def refresh(self) -> None:
         """
         Refreshes the `access_token` with `refresh_token`.
+
+        Raises:
+            KeycloakError: On Keycloak API errors
         """
         if self.refresh_token:
             mapping = self._parse_keycloak_response(

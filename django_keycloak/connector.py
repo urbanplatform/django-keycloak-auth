@@ -2,37 +2,21 @@
 Module to interact with Keycloak Admin API
 """
 from keycloak.exceptions import KeycloakAuthenticationError, KeycloakGetError
-
-
 from keycloak.keycloak_admin import KeycloakAdmin
-from django_keycloak.errors import (
-    KeycloakNoServiceAccountRolesError,
-    KeycloakMissingServiceAccountRolesError,
-)
 
 from django_keycloak.config import settings
-
-# Variables for parent constructor
-SERVER_URL = settings.SERVER_URL
-INTERNAL_URL = settings.INTERNAL_URL
-BASE_PATH = settings.BASE_PATH
-REAL_NAME = settings.REALM
-CLIENT_ID = settings.CLIENT_ID
-CLIENT_SECRET_KEY = settings.CLIENT_SECRET_KEY
-
-# Decide URL (internal url overrides serverl url)
-URL = INTERNAL_URL if INTERNAL_URL else SERVER_URL
-# Add base path
-URL += BASE_PATH
+from django_keycloak.errors import (
+    KeycloakMissingServiceAccountRolesError,
+    KeycloakNoServiceAccountRolesError,
+)
 
 try:
     KeycloakAdminConnector = KeycloakAdmin(
-        server_url=URL,
-        client_id=CLIENT_ID,
-        realm_name=REAL_NAME,
-        client_secret_key=CLIENT_SECRET_KEY,
+        server_url=settings.KEYCLOAK_URL,
+        client_id=settings.CLIENT_ID,
+        realm_name=settings.REALM,
+        client_secret_key=settings.CLIENT_SECRET_KEY,
     )
-
 except KeycloakAuthenticationError as error:
     # Check if the error is due to service account not being enabled
     if "Client not enabled to retrieve service account" in str(error):

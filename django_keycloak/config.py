@@ -2,45 +2,48 @@
 Module to interact with django settings
 """
 from dataclasses import dataclass, field
-from typing import Optional, List
+from typing import List, Optional
+
 from django.conf import settings as django_settings
+
 
 # Get settings
 @dataclass
 class Settings:
+    # Base URL to the Keycloak server from the client application https://auth.example.com
     SERVER_URL: str
+    # The Keycloak realm in which this client is registered
     REALM: str
+    # The ID of this client in the above Keycloak realm
     CLIENT_ID: str
+    # The secret for this confidential client
     CLIENT_SECRET_KEY: str
+    # The name of the admin role for the client
     CLIENT_ADMIN_ROLE: str
+    # The name of the admin role for the realm
     REALM_ADMIN_ROLE: str
+    # Regex formatted URLs to skip authentication for (uses re.match())
     EXEMPT_URIS: Optional[List] = field(default_factory=[])
+    # Overrides SERVER_URL for Keycloak admin calls
     INTERNAL_URL: Optional[str] = None
-    BASE_PATH: Optional[str] = ""
+    # Override default Keycloak base path (/auth/)
+    BASE_PATH: Optional[str] = "/auth/"
+    # Regex formatted URL to excempt the GraphQL URL"""
     GRAPHQL_ENDPOINT: Optional[str] = "graphql/"
     # Flag if the token should be introspected or decoded
     DECODE_TOKEN: Optional[bool] = False
-    # The percentage of a tokens valid duration until a new token is requested
-    TOKEN_TIMEOUT_FACTOR: Optional[float] = 0.9
+    # Flag if the audience in the token should be verified
+    VERIFY_AUDIENCE: Optional[bool] = True
+    # Flag if the user info has been included in the token
+    USER_INFO_IN_TOKEN: Optional[bool] = True
+    # Derived setting of the SERVER/INTERNAL_URL and BASE_PATH
+    KEYCLOAK_URL: str = field(init=False)
 
-    def __init__(self, **vars) -> None:
+    def __post_init__(self) -> None:
+        # Decide URL (internal url overrides serverl url)
+        URL = self.INTERNAL_URL if self.INTERNAL_URL else self.SERVER_URL
+        self.KEYCLOAK_URL = f"{URL}{self.BASE_PATH}"
 
-        for key, value in vars.items():
-            setattr(self, key, value)
-
-
-__desired_variables = Settings.__annotations__.keys()
-__defined_variables = getattr(
-    django_settings,
-    "KEYCLOAK_CONFIG",
-    {},
-)
-# Create a dict of the values of the settings defined in django
-__values = {
-    key: __defined_variables.get(key)
-    for key in __desired_variables
-    if key in __defined_variables
-}
 
 # The exported settings object
-settings = Settings(**__values)
+settings = Settings(**django_settings.KEYCLOAK_CONFIG)
