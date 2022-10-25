@@ -48,22 +48,18 @@ class Settings:
         self.KEYCLOAK_URL = f"{URL}{self.BASE_PATH}"
 
 
-__desired_variables = Settings.__annotations__.keys()
-__defined_variables = getattr(
+# Get keycloak configs from django
+__configs = getattr(
     django_settings,
     "KEYCLOAK_CONFIG",
     {},
 )
-# Create a dict of the values of the settings defined in django
-__values = {
-    key: value
-    for key in __desired_variables
-    if key in __defined_variables
-    and (value := __defined_variables.get(key)) is not None
-}
+# Filter out configs with `None` as values
+__configs = {k: v for k, v in __configs.items() if v}
+
 try:
     # The exported settings object
-    settings = Settings(**__values)
+    settings = Settings(**__configs)
 except TypeError as e:
     import django_keycloak.errors as errors
 
