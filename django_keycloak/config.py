@@ -1,13 +1,19 @@
 """
 Module to interact with django settings
 """
+import re
 from dataclasses import dataclass, field
 from typing import Optional, List
 from django.conf import settings as django_settings
+from django_keycloak.errors import KeycloakMissingSettingError
 
 # Get settings
 @dataclass
 class Settings:
+    """
+    Django Keycloak settings container
+    """
+
     SERVER_URL: str
     REALM: str
     CLIENT_ID: str
@@ -23,11 +29,6 @@ class Settings:
     # The percentage of a tokens valid duration until a new token is requested
     TOKEN_TIMEOUT_FACTOR: Optional[float] = 0.9
 
-    def __init__(self, **vars) -> None:
-
-        for key, value in vars.items():
-            setattr(self, key, value)
-
 
 __desired_variables = Settings.__annotations__.keys()
 __defined_variables = getattr(
@@ -37,10 +38,15 @@ __defined_variables = getattr(
 )
 # Create a dict of the values of the settings defined in django
 __values = {
-    key: __defined_variables.get(key)
+    key: value
     for key in __desired_variables
     if key in __defined_variables
+    and (value := __defined_variables.get(key)) is not None
 }
-
-# The exported settings object
-settings = Settings(**__values)
+try:
+    # The exported settings object
+    settings = Settings(**__values)
+except TypeError as e:
+    # Get missing variables with regex
+    missing_required_vars = re.findall("'([^']*)'", str(e))
+    raise KeycloakMissingSettingError(" / ".join(missing_required_vars)) from e

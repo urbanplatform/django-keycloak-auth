@@ -14,6 +14,20 @@ class KeycloakAPIError(Exception):
         self.message = message
 
 
+class KeycloakMissingSettingError(Exception):
+    """
+    Raised when a given Django Keycloak setting(s) is missing.
+    """
+
+    def __init__(self, setting: str):
+        super().__init__(
+            (
+                f"The following settings are missing: '{setting}' ",
+                "Please add them in 'KEYCLOAK_CONFIG' inside Django settings",
+            )
+        )
+
+
 class KeycloakNoServiceAccountRolesError(Exception):
     """
     Raised when the Keycloak server is not configured for
