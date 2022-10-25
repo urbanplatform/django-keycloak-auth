@@ -27,9 +27,6 @@ class KeycloakMiddleware(MiddlewareMixin):
         """
         auth_type, value, *_ = request.META.get("HTTP_AUTHORIZATION").split()
 
-        if not auth_type or auth_type[0].lower() not in ["basic", "bearer"]:
-            return None
-
         if auth_type == "Basic":
             decoded_username, decoded_password = (
                 base64.b64decode(value).decode("utf-8").split(":")
