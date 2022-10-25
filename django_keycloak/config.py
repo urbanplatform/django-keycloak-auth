@@ -49,13 +49,9 @@ class Settings:
 
 
 # Get keycloak configs from django
-__configs = getattr(
-    django_settings,
-    "KEYCLOAK_CONFIG",
-    {},
-)
+__configs = django_settings.KEYCLOAK_CONFIG
 # Filter out configs with `None` as values
-__configs = {k: v for k, v in __configs.items() if v}
+__configs = {k: v for k, v in __configs.items() if v is not None}
 
 try:
     # The exported settings object
