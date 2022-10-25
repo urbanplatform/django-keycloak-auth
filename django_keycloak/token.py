@@ -3,7 +3,6 @@ Module to interact with the Keycloak token API
 """
 from __future__ import annotations
 
-from dataclasses import dataclass
 from typing import Optional
 
 from cachetools.func import ttl_cache
@@ -53,6 +52,8 @@ class Token:
             JOSEError: On expired or invalid tokens
             KeycloakError: On expired / invalid tokens or Keycloak API errors
         """
+        if not self.access_token:
+            return {}
         # If user enabled `DECODE_TOKEN` using local decoding
         if settings.DECODE_TOKEN:
             return KEYCLOAK.decode_token(
@@ -73,7 +74,8 @@ class Token:
             JOSEError: On expired or invalid tokens
             KeycloakError: On expired / invalid tokens or Keycloak API errors
         """
-        # If user enabled `DECODE_TOKEN` using local decoding
+        if not self.refresh_token:
+            return {}
         # If user enabled `DECODE_TOKEN` using local decoding
         if settings.DECODE_TOKEN:
             return KEYCLOAK.decode_token(
@@ -142,8 +144,8 @@ class Token:
             JOSEError: On expired or invalid tokens
             KeycloakError: On expired / invalid tokens or Keycloak API errors
         """
-        if (settings.CLIENT_ADMIN_ROLE in self.client_roles) or (  # type: ignore
-            settings.REALM_ADMIN_ROLE in self.realm_roles
+        if (settings.CLIENT_ADMIN_ROLE in self.client_roles()) or (  # type: ignore
+            settings.REALM_ADMIN_ROLE in self.realm_roles()
         ):  # type: ignore
             return True
 
@@ -158,7 +160,7 @@ class Token:
             KeycloakError: On expired / invalid tokens or Keycloak API errors
         """
         return (
-            Token.get_access_token_info()
+            self.get_access_token_info()
             .get("resource_access", {})
             .get(settings.CLIENT_ID, {})
             .get("roles", [])
@@ -172,7 +174,7 @@ class Token:
             JOSEError: On expired or invalid tokens
             KeycloakError: On expired / invalid tokens or Keycloak API errors
         """
-        return Token.get_access_token_info().get("realm_access", {}).get("roles", [])
+        return self.get_access_token_info().get("realm_access", {}).get("roles", [])
 
     def client_scopes(self) -> list:
         """
@@ -182,9 +184,7 @@ class Token:
             JOSEError: On expired or invalid tokens
             KeycloakError: On expired / invalid tokens or Keycloak API errors
         """
-        return Token.get_access_token_info().get("scope", "").split(" ")
-
-    # Methods
+        return self.get_access_token_info().get("scope", "").split(" ")
 
     @classmethod
     def from_credentials(cls, username: str, password: str) -> Optional[Token]:  # type: ignore
