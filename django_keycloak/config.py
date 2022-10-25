@@ -5,7 +5,6 @@ import re
 from dataclasses import dataclass, field
 from typing import Optional, List
 from django.conf import settings as django_settings
-from django_keycloak.errors import KeycloakMissingSettingError
 
 # Get settings
 @dataclass
@@ -47,6 +46,8 @@ try:
     # The exported settings object
     settings = Settings(**__values)
 except TypeError as e:
+    import django_keycloak.errors as errors
+
     # Get missing variables with regex
     missing_required_vars = re.findall("'([^']*)'", str(e))
-    raise KeycloakMissingSettingError(" / ".join(missing_required_vars)) from e
+    raise errors.KeycloakMissingSettingError(" / ".join(missing_required_vars)) from e

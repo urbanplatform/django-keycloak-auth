@@ -1,7 +1,7 @@
 """
 Module containing custom errors.
 """
-from django_keycloak.config import settings
+import django_keycloak.config as config
 
 
 class KeycloakAPIError(Exception):
@@ -22,7 +22,7 @@ class KeycloakMissingSettingError(Exception):
     def __init__(self, setting: str):
         super().__init__(
             (
-                f"The following settings are missing: '{setting}' ",
+                f"The following settings are missing: '{setting}' "
                 "Please add them in 'KEYCLOAK_CONFIG' inside Django settings",
             )
         )
@@ -38,7 +38,7 @@ class KeycloakNoServiceAccountRolesError(Exception):
         super().__init__(
             (
                 "'Service account roles' setting not enabled. "
-                f"Please enable this authentication workflow for client '{settings.CLIENT_ID}'."
+                f"Please enable this authentication workflow for client '{config.settings.CLIENT_ID}'."
             )
         )
 
@@ -54,7 +54,7 @@ class KeycloakMissingServiceAccountRolesError(Exception):
             (
                 "'Service account roles' setting is enabled, "
                 "but role 'manage-users' is missing. "
-                f"To enable it go to realm '{settings.REALM}' --> '{settings.CLIENT_ID}' client --> Service accounts roles "
+                f"To enable it go to realm '{config.settings.REALM}' --> '{config.settings.CLIENT_ID}' client --> Service accounts roles "
                 " --> Assign role --> Filter by clients --> and add 'manage-users'."
             )
         )
