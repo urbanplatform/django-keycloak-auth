@@ -26,7 +26,7 @@ class Settings:
     # The name of the admin role for the realm
     REALM_ADMIN_ROLE: str
     # Regex formatted URLs to skip authentication for (uses re.match())
-    EXEMPT_URIS: Optional[List] = field(default_factory=[])
+    EXEMPT_URIS: Optional[List] = field(default_factory=list)
     # Overrides SERVER_URL for Keycloak admin calls
     INTERNAL_URL: Optional[str] = None
     # Override default Keycloak base path (/auth/)
@@ -51,14 +51,23 @@ class Settings:
 # Get keycloak configs from django
 __configs = django_settings.KEYCLOAK_CONFIG
 # Filter out configs with `None` as values
-__configs = {k: v for k, v in __configs.items() if v is not None}
-
+__configs = {
+    k: v
+    for k, v in __configs.items()
+    if v is not None and k in Settings.__annotations__.keys()
+}
 try:
     # The exported settings object
     settings = Settings(**__configs)
+
 except TypeError as e:
     import django_keycloak.errors as errors
 
-    # Get missing variables with regex
-    missing_required_vars = re.findall("'([^']*)'", str(e))
-    raise errors.KeycloakMissingSettingError(" / ".join(missing_required_vars)) from e
+    if "required positional argument" in str(e):
+        # Get missing variables with regex
+        missing_required_vars = re.findall("'([^']*)'", str(e))
+        raise errors.KeycloakMissingSettingError(
+            " / ".join(missing_required_vars)
+        ) from e
+    else:
+        raise e
