@@ -1,4 +1,3 @@
-import logging
 from django_keycloak.connector import KeycloakAdminConnector
 
 
@@ -11,26 +10,7 @@ class KeycloakTestMixin:
 
     Usage: In the test class, derive from this mixin and call keycloak_init/teardown in
     the setUp and tearDown functions.
-
-    class LoginTests(KeycloakTestMixin, TestCase):
-        def setUp(self):
-            keycloak_init()
-            ...
-
-        def tearDown(self):
-            keycloak_teardown()
-            ...
     """
-
-    def setUp(self):  # pylint: disable=invalid-name
-        logging.warning("Please call keycloak_init() manually", DeprecationWarning, 2)
-        self.keycloak_init()
-
-    def tearDown(self):  # pylint: disable=invalid-name
-        logging.warning(
-            "Please call keycloak_cleanup() manually", DeprecationWarning, 2
-        )
-        self.keycloak_cleanup()
 
     def keycloak_init(self):
         self._start_users = {
