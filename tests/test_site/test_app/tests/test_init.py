@@ -2,12 +2,10 @@ from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.test import TestCase
 from django_keycloak.mixins import KeycloakTestMixin
-from django_keycloak.models import KeycloakUser
 
 
 class TestInit(KeycloakTestMixin, TestCase):
     def setUp(self):
-        # import ipdb; ipdb.set_trace()
         self.keycloak_init()
 
     def tearDown(self):
