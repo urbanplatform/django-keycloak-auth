@@ -1,0 +1,42 @@
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry]
+name = "django_uw_keycloak"
+version = "2.0.0"
+description = "Middleware to allow authorization using Keycloak and Django"
+authors = [
+  "Ubiwhere <urbanplatform@ubiwhere.com>",
+  "Moritz Ulmer <moritz.ulmer@posteo.de>",
+  "Diogo Silva <diogosilv30@gmail.com>",
+]
+license = "MIT"
+repository = "https://github.com/urbanplatform/django-keycloak-auth"
+classifiers = [
+  "License :: OSI Approved :: MIT License",
+  "Programming Language :: Python",
+  "Programming Language :: Python :: 3",
+  "Environment :: Web Environment",
+  "Framework :: Django",
+  "Intended Audience :: Developers",
+  "Topic :: Security",
+]
+keywords = ["keycloak", "django", "authorization"]
+readme = "README.md"
+packages = [
+    { include = "django_keycloak", from = "src" }
+]
+
+[tool.poetry.dependencies]
+python = ">=3.7,<4"
+django = ">=2.2"
+djangorestframework = ">=3.0"
+dry-rest-permissions = ">=0.1"
+python-keycloak = ">=2.6.0"
+cachetools = ">=5.0.0"
+
+[tool.poetry.dev-dependencies]
+black = "~=22.6"
+coverage = "~=6.4"
+ipdb = "*"
