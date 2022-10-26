@@ -22,3 +22,31 @@ class KeycloakTestMixin:
         users_to_remove = new_users.difference(self._start_users)
         for user_id in users_to_remove:
             KeycloakAdminConnector.delete_user(user_id)
+
+    def create_user_on_keycloak(
+        self,
+        username,
+        email,
+        password=None,
+        first_name=None,
+        last_name=None,
+        enabled=True,
+        actions=None,
+    ):
+        """Creates user on keycloak server, No state is changed on local db"""
+
+        values = {"username": username, "email": email, "enabled": enabled}
+        if password is not None:
+            values["credentials"] = [
+                {"type": "password", "value": password, "temporary": False}
+            ]
+        if first_name is not None:
+            values["firstName"] = first_name
+        if last_name is not None:
+            values["lastName"] = last_name
+        if actions is not None:
+            values["requiredActions"] = actions
+
+        newuser = KeycloakAdminConnector.create_user(payload=values)
+        raise ValueError(newuser)
+        return KeycloakAdminConnector.get_user(newuser["id"])

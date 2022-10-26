@@ -7,7 +7,7 @@ from django_keycloak.mixins import KeycloakTestMixin
 class TestMiddleware(KeycloakTestMixin, TestCase):
     def setUp(self):
         self.keycloak_init()
-        self.user_a = get_user_model().objects.create_keycloak_user(
+        self.user_a = self.create_user_on_keycloak(
             username="ownerA",
             email="user@example.com",
             password="PWowNerA0!",
