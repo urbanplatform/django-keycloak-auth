@@ -47,4 +47,5 @@ class KeycloakTestMixin:
         if actions is not None:
             values["requiredActions"] = actions
 
-        return KeycloakAdminConnector.create_user(payload=values)
+        id = KeycloakAdminConnector.create_user(payload=values)
+        return KeycloakAdminConnector.get_user(id)
