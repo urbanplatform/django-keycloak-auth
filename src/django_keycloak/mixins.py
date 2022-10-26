@@ -32,7 +32,7 @@ class KeycloakTestMixin:
         last_name=None,
         enabled=True,
         actions=None,
-    ):
+    ) -> dict:
         """Creates user on keycloak server, No state is changed on local db"""
 
         values = {"username": username, "email": email, "enabled": enabled}
@@ -47,6 +47,4 @@ class KeycloakTestMixin:
         if actions is not None:
             values["requiredActions"] = actions
 
-        newuser = KeycloakAdminConnector.create_user(payload=values)
-        raise ValueError(newuser)
-        return KeycloakAdminConnector.get_user(newuser["id"])
+        return KeycloakAdminConnector.create_user(payload=values)
