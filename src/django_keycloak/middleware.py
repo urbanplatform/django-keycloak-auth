@@ -100,15 +100,10 @@ class KeycloakMiddleware(MiddlewareMixin):
         To be executed before the view each request.
         """
         # Skip auth in the following cases:
-        # 1. It is a graphql endpoint (handled by KeycloakGrapheneMiddleware)
-        # 2. It is a URL in "EXEMPT_URIS"
-        # 3. Request does not contain authorization header
+        # 1. It is a URL in "EXEMPT_URIS"
+        # 2. Request does not contain authorization header
         # Also skip auth for "EXEMPT_URIS" defined in configs
-        if (
-            self.is_graphql_endpoint(request)
-            or self.pass_auth(request)
-            or not self.has_auth_header(request)
-        ):
+        if self.pass_auth(request) or not self.has_auth_header(request):
             return
 
         token: Union[Token, None] = self.get_token_from_request(request)
@@ -126,18 +121,3 @@ class KeycloakMiddleware(MiddlewareMixin):
         exempt_uris = settings.EXEMPT_URIS
 
         return any(re.match(m, path) for m in exempt_uris)
-
-    def is_graphql_endpoint(self, request):
-        """
-        Check if the request path belongs to a graphql endpoint
-        """
-        graphql_endpoint = settings.GRAPHQL_ENDPOINT
-        if graphql_endpoint is None:
-            return False
-
-        path = request.path_info.lstrip("/")
-        is_graphql_endpoint = re.match(graphql_endpoint, path)
-        if is_graphql_endpoint and request.method != "GET":
-            return True
-
-        return False

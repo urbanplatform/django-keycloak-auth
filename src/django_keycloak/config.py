@@ -31,8 +31,6 @@ class Settings:
     INTERNAL_URL: Optional[str] = None
     # Override default Keycloak base path (/auth/)
     BASE_PATH: Optional[str] = "/auth/"
-    # Regex formatted URL to excempt the GraphQL URL"""
-    GRAPHQL_ENDPOINT: Optional[str] = "graphql/"
     # Flag if the token should be introspected or decoded
     DECODE_TOKEN: Optional[bool] = False
     # Flag if the audience in the token should be verified
