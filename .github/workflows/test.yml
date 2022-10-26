@@ -53,7 +53,7 @@ jobs:
           python-version: ${{ matrix.python-version }}
 
       - name: Set up the cache
-        uses: actions/cache@v1
+        uses: actions/cache@v3
         env:
           cache-name: cache-python-packages
         with:
