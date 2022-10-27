@@ -10,12 +10,14 @@ from django_keycloak.errors import (
     KeycloakMissingServiceAccountRolesError,
     KeycloakNoServiceAccountRolesError,
 )
-from django_keycloak.models import AbstractKeycloakUser
+
+# Avoid circular import
+import django_keycloak.models as models
 
 # Only try to start connector if auth model user is one of this package
 # user might be using conditional auth systems, and we dont want to connect
 # to server if it does not exist
-if not issubclass(get_user_model(), AbstractKeycloakUser):
+if not issubclass(get_user_model(), models.AbstractKeycloakUser):
     KeycloakAdminConnector = None
 else:
     try:
