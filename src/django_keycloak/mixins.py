@@ -1,4 +1,6 @@
-from django_keycloak.connector import KeycloakAdminConnector
+from typing import Optional
+
+from django_keycloak.connector import lazy_keycloak_admin
 
 
 class KeycloakTestMixin:
@@ -13,29 +15,25 @@ class KeycloakTestMixin:
     """
 
     def keycloak_init(self):
-        connector = KeycloakAdminConnector()
-
-        self._start_users = {user.get("id") for user in connector.get_users()}
+        self._start_users = {user.get("id") for user in lazy_keycloak_admin.get_users()}
 
     def keycloak_cleanup(self):
-        connector = KeycloakAdminConnector()
-        new_users = {user.get("id") for user in connector.get_users()}
+        new_users = {user.get("id") for user in lazy_keycloak_admin.get_users()}
         users_to_remove = new_users.difference(self._start_users)
         for user_id in users_to_remove:
-            connector.delete_user(user_id)
+            lazy_keycloak_admin.delete_user(user_id)
 
     def create_user_on_keycloak(
         self,
-        username,
-        email,
-        password=None,
-        first_name=None,
-        last_name=None,
-        enabled=True,
-        actions=None,
+        username: str,
+        email: str,
+        password: Optional[str] = None,
+        first_name: Optional[str] = None,
+        last_name: Optional[str] = None,
+        enabled: bool = True,
+        actions: Optional[str] = None,
     ) -> dict:
         """Creates user on keycloak server, No state is changed on local db"""
-        connector = KeycloakAdminConnector()
         values = {"username": username, "email": email, "enabled": enabled}
         if password is not None:
             values["credentials"] = [
@@ -48,5 +46,5 @@ class KeycloakTestMixin:
         if actions is not None:
             values["requiredActions"] = actions
 
-        id = connector.create_user(payload=values)
-        return connector.get_user(id)
+        user_id = lazy_keycloak_admin.create_user(payload=values)
+        return lazy_keycloak_admin.get_user(user_id)

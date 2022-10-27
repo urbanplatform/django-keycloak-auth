@@ -4,8 +4,8 @@ from django.db.models import Q
 from django.utils.translation import gettext_lazy as _
 from dry_rest_permissions.generics import authenticated_users
 
+from .connector import lazy_keycloak_admin
 from .managers import KeycloakUserManager, KeycloakUserManagerAutoId
-from .connector import KeycloakAdminConnector
 
 
 class AbstractKeycloakUser(AbstractBaseUser, PermissionsMixin):
@@ -40,7 +40,6 @@ class AbstractKeycloakUser(AbstractBaseUser, PermissionsMixin):
         abstract = True
 
     def update_keycloak(self, email=None, first_name=None, last_name=None):
-        connector = KeycloakAdminConnector()
         values = {}
         if email is not None:
             values["email"] = email
@@ -48,11 +47,10 @@ class AbstractKeycloakUser(AbstractBaseUser, PermissionsMixin):
             values["firstName"] = first_name
         if last_name is not None:
             values["lastName"] = last_name
-        return connector.update_user(self.keycloak_identifier, **values)
+        return lazy_keycloak_admin.update_user(self.keycloak_identifier, **values)
 
     def delete_keycloak(self):
-        connector = KeycloakAdminConnector()
-        connector.delete_user(self.keycloak_identifier)
+        lazy_keycloak_admin.delete_user(self.keycloak_identifier)
 
 
 class KeycloakUser(AbstractKeycloakUser):
@@ -77,9 +75,8 @@ class KeycloakUser(AbstractKeycloakUser):
         return self._cached_user_info.get("lastName")
 
     def _confirm_cache(self):
-        connector = KeycloakAdminConnector()
         if not self._cached_user_info:
-            self._cached_user_info = connector.get_user(self.id)
+            self._cached_user_info = lazy_keycloak_admin.get_user(self.id)
 
 
 class AbstractKeycloakUserAutoId(AbstractKeycloakUser):

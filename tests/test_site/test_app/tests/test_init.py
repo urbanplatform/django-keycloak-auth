@@ -1,12 +1,11 @@
 from django.test import TestCase
 from django_keycloak import Token
-from django_keycloak.connector import KeycloakAdminConnector
+from django_keycloak.connector import lazy_keycloak_admin
 from django_keycloak.mixins import KeycloakTestMixin
 
 
 class TestInit(KeycloakTestMixin, TestCase):
     def setUp(self):
-        self.connector = KeycloakAdminConnector()
         self.keycloak_init()
 
     def tearDown(self):
@@ -20,6 +19,6 @@ class TestInit(KeycloakTestMixin, TestCase):
             first_name="Owner",
             last_name="AAAA",
         )
-        self.connector.update_user(user_a["id"], {"emailVerified": True})
+        lazy_keycloak_admin.update_user(user_a["id"], {"emailVerified": True})
         valid_token = Token.from_credentials(username="ownerA", password="PWowNerA0!")
         self.assertTrue(valid_token)

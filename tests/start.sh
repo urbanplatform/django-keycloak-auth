@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Exit with nonzero exit code if anything fails
-set -exo pipefail
+set -eo pipefail
 # Ensure the script is running in this directory
 cd "$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")"
 
@@ -24,12 +24,14 @@ if (($(curl -s -o /dev/null -w "%{http_code}" "$KEYCLOAK_URL/auth/realms/$KEYCLO
     -d "username=$KEYCLOAK_ADMIN_USER" \
     -d "password=$KEYCLOAK_ADMIN_PASSWORD" \
     "$KEYCLOAK_URL/auth/realms/master/protocol/openid-connect/token")
-  echo "$KEYCLOAK_TOKEN_RESPONSE"
   KEYCLOAK_TOKEN=$(echo "$KEYCLOAK_TOKEN_RESPONSE" | jq -r .access_token)
-  echo "$KEYCLOAK_TOKEN"
 
   # Get Keycloak server version to add the right config file
-  KEYCLOAK_VERSION="$(curl -v -X GET -H "Content-Type: application/json" -H "Authorization: bearer $KEYCLOAK_TOKEN" "$KEYCLOAK_URL/auth/admin/serverinfo" | jq '.systemInfo.version')"
+  KEYCLOAK_VERSION="$(curl -s \
+    -H "Content-Type: application/json" \
+    -H "Authorization: bearer $KEYCLOAK_TOKEN" \
+    "$KEYCLOAK_URL/auth/admin/serverinfo" \
+    | jq '.systemInfo.version')"
   echo "Keycloak version: $KEYCLOAK_VERSION"
   VERSION_MAJOR="$(echo "$KEYCLOAK_VERSION" | tr -d \" | cut -d . -f 1)"
   if [ "$VERSION_MAJOR" -le 14 ]; then
