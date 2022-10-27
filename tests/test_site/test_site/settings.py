@@ -14,6 +14,34 @@ import os
 import sys
 from pathlib import Path
 
+LOGGING = {
+    "version": 1,
+    "formatters": {
+        "line_scope": {
+            "format": f"%(levelname)s | %(name)s.%(funcName)s:%(lineno)s | %(message)s"
+        },
+    },
+    "handlers": {
+        "console_line_scope": {
+            "class": "logging.StreamHandler",
+            "formatter": "line_scope",
+        },
+    },
+    "loggers": {
+        "": {
+            "handlers": ["console_line_scope"],
+            "level": "INFO",
+            "propagate": False,
+        },
+        "django_keycloak": {
+            "handlers": ["console_line_scope"],
+            "level": os.getenv("DJANGO_LOG_LEVEL", "INFO"),
+            "propagate": False,
+        },
+    },
+}
+
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 sys.path.append(os.path.abspath(os.path.join(BASE_DIR, "../../src")))
@@ -144,5 +172,6 @@ KEYCLOAK_CONFIG = {
     "CLIENT_ADMIN_ROLE": "admin",
     "REALM_ADMIN_ROLE": "admin",
     "EXEMPT_URIS": [],
-    "DECODE_TOKEN": "true",
+    "DECODE_TOKEN": True,
+    "TRACE_DEBUG_LOGS": True,
 }
