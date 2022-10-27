@@ -1,8 +1,7 @@
-from django.conf import settings
 from django.test import TestCase
-from django_keycloak.mixins import KeycloakTestMixin
-from django_keycloak.connector import KeycloakAdminConnector
 from django_keycloak import Token
+from django_keycloak.connector import KeycloakAdminConnector
+from django_keycloak.mixins import KeycloakTestMixin
 
 
 class TestInit(KeycloakTestMixin, TestCase):
@@ -20,5 +19,6 @@ class TestInit(KeycloakTestMixin, TestCase):
             first_name="Owner",
             last_name="AAAA",
         )
-        KeycloakAdminConnector.update_user(user_a.id, {"emailVerified": True})
+        KeycloakAdminConnector.update_user(user_a["id"], {"emailVerified": True})
         valid_token = Token.from_credentials(username="ownerA", password="PWowNerA0!")
+        self.assertTrue(valid_token)

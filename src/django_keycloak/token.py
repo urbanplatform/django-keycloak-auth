@@ -3,6 +3,7 @@ Module to interact with the Keycloak token API
 """
 from __future__ import annotations
 
+import logging
 from typing import Optional
 
 from cachetools.func import ttl_cache
@@ -23,6 +24,8 @@ KEYCLOAK = KeycloakOpenID(
     realm_name=settings.REALM,
     client_secret_key=settings.CLIENT_SECRET_KEY,
 )
+
+logger = logging.getLogger(__name__)
 
 
 class Token:
@@ -109,7 +112,10 @@ class Token:
         """
         try:
             info = self.get_access_token_info()
-        except (JOSEError, KeycloakError):
+        except (JOSEError, KeycloakError) as err:
+            logger.debug(
+                f"{type(err).__name__}: {err.args}", exc_info=settings.TRACE_DEBUG_LOGS
+            )
             return False
         # Keycloak introspections return {"active": bool}
         if "active" in info:
@@ -207,7 +213,10 @@ class Token:
             return cls(**cls._parse_keycloak_response(keycloak_response))
         # Catch authentication error (invalid credentials),
         # and post error (account not completed.)
-        except (KeycloakAuthenticationError, KeycloakPostError):
+        except (KeycloakAuthenticationError, KeycloakPostError) as err:
+            logger.debug(
+                f"{type(err).__name__}: {err.args}", exc_info=settings.TRACE_DEBUG_LOGS
+            )
             return None
 
     @classmethod

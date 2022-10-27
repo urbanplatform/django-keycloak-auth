@@ -37,6 +37,9 @@ class Settings:
     VERIFY_AUDIENCE: Optional[bool] = True
     # Flag if the user info has been included in the token
     USER_INFO_IN_TOKEN: Optional[bool] = True
+    # Flag to show the traceback of debug logs
+    TRACE_DEBUG_LOGS: Optional[bool] = False
+
     # Derived setting of the SERVER/INTERNAL_URL and BASE_PATH
     KEYCLOAK_URL: str = field(init=False)
 

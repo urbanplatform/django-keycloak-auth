@@ -20,9 +20,8 @@ jobs:
       KEYCLOAK_CLIENT_ID: test-client
       KEYCLOAK_CLIENT_SECRET_KEY: f6974574-c773-4554-826d-06946cd55e98
     strategy:
-      max-parallel: 2
       matrix:
-        python-version: ["3.7", "3.8", "3.9", "3.10"]
+        python-version: ["3.7", "3.8", "3.9", "3.10", "3.11"]
         keycloak-tag:
           [
             "13.0.1",
