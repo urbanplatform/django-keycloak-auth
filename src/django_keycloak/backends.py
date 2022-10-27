@@ -4,9 +4,8 @@ Module containing custom Django authentication backends.
 from typing import Optional, Union
 from django.contrib.auth.backends import RemoteUserBackend
 from django.contrib.auth import get_user_model
-from django_keycloak.models import KeycloakUserAutoId
+from django_keycloak.models import KeycloakUserAutoId, KeycloakUser
 from django_keycloak import Token
-from django_keycloak.models import KeycloakUser, KeycloakUserAutoId
 
 
 class KeycloakAuthenticationBackend(RemoteUserBackend):
@@ -17,7 +16,7 @@ class KeycloakAuthenticationBackend(RemoteUserBackend):
     def authenticate(
         self,
         request,
-        username: Optional[str] = None,
+        remote_user: Optional[str] = None,
         password: Optional[str] = None,
     ):
         """
@@ -28,7 +27,7 @@ class KeycloakAuthenticationBackend(RemoteUserBackend):
 
         # Create token from the provided credentials and check if
         # credentials were valid
-        token = Token.from_credentials(username, password)  # type: ignore
+        token = Token.from_credentials(remote_user, password)  # type: ignore
 
         # Check for non-existing or unactive token
         if not token:
@@ -40,7 +39,7 @@ class KeycloakAuthenticationBackend(RemoteUserBackend):
 
         # try to get user from database
         try:
-            user = User.objects.get(username=username)
+            user = User.objects.get(username=remote_user)
             if isinstance(user, KeycloakUserAutoId):
                 # Get user information from token
                 user_info = token.user_info
@@ -64,12 +63,12 @@ class KeycloakAuthenticationBackend(RemoteUserBackend):
         user.save()
         return user
 
-    def get_user(self, user_identifier: str):
+    def get_user(self, user_id: str):
         User: Union[KeycloakUser, KeycloakUserAutoId] = get_user_model()
         try:
-            return User.objects.get(username=user_identifier)
+            return User.objects.get(username=user_id)
         except User.DoesNotExist:
             try:
-                return User.objects.get(id=user_identifier)
+                return User.objects.get(id=user_id)
             except User.DoesNotExist:
                 return None

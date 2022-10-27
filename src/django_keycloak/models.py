@@ -15,6 +15,7 @@ class AbstractKeycloakUser(AbstractBaseUser, PermissionsMixin):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        self.connector = KeycloakAdminConnector()
         self._cached_user_info = None
 
     id = models.UUIDField(_("keycloak_id"), unique=True, primary_key=True)
@@ -48,10 +49,10 @@ class AbstractKeycloakUser(AbstractBaseUser, PermissionsMixin):
             values["firstName"] = first_name
         if last_name is not None:
             values["lastName"] = last_name
-        return KeycloakAdminConnector.update_user(self.keycloak_identifier, **values)
+        return self.connector.update_user(self.keycloak_identifier, **values)
 
     def delete_keycloak(self):
-        KeycloakAdminConnector.delete_user(self.keycloak_identifier)
+        self.connector.delete_user(self.keycloak_identifier)
 
 
 class KeycloakUser(AbstractKeycloakUser):
@@ -77,7 +78,7 @@ class KeycloakUser(AbstractKeycloakUser):
 
     def _confirm_cache(self):
         if not self._cached_user_info:
-            self._cached_user_info = KeycloakAdminConnector.get_user(self.id)
+            self._cached_user_info = self.connector.get_user(self.id)
 
 
 class AbstractKeycloakUserAutoId(AbstractKeycloakUser):

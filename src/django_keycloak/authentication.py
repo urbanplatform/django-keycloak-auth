@@ -1,14 +1,11 @@
 """
 Custom authentication class for Django Rest Framework.
 """
+from typing import Union
 from django.contrib.auth import get_user_model
-from django.contrib.auth.models import AnonymousUser
-from rest_framework import HTTP_HEADER_ENCODING
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.exceptions import AuthenticationFailed
-from rest_framework.authentication import get_authorization_header
 from django_keycloak import Token
-from typing import Union
 
 
 class KeycloakAuthentication(TokenAuthentication):

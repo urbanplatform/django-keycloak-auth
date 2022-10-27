@@ -13,15 +13,16 @@ class KeycloakTestMixin:
     """
 
     def keycloak_init(self):
-        self._start_users = {
-            user.get("id") for user in KeycloakAdminConnector.get_users()
-        }
+        connector = KeycloakAdminConnector()
+
+        self._start_users = {user.get("id") for user in connector.get_users()}
 
     def keycloak_cleanup(self):
-        new_users = {user.get("id") for user in KeycloakAdminConnector.get_users()}
+        connector = KeycloakAdminConnector()
+        new_users = {user.get("id") for user in connector.get_users()}
         users_to_remove = new_users.difference(self._start_users)
         for user_id in users_to_remove:
-            KeycloakAdminConnector.delete_user(user_id)
+            connector.delete_user(user_id)
 
     def create_user_on_keycloak(
         self,
@@ -34,7 +35,7 @@ class KeycloakTestMixin:
         actions=None,
     ) -> dict:
         """Creates user on keycloak server, No state is changed on local db"""
-
+        connector = KeycloakAdminConnector()
         values = {"username": username, "email": email, "enabled": enabled}
         if password is not None:
             values["credentials"] = [
@@ -47,5 +48,5 @@ class KeycloakTestMixin:
         if actions is not None:
             values["requiredActions"] = actions
 
-        id = KeycloakAdminConnector.create_user(payload=values)
-        return KeycloakAdminConnector.get_user(id)
+        id = connector.create_user(payload=values)
+        return connector.get_user(id)
