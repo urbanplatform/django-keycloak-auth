@@ -77,8 +77,9 @@ class KeycloakUser(AbstractKeycloakUser):
         return self._cached_user_info.get("lastName")
 
     def _confirm_cache(self):
+        connector = KeycloakAdminConnector()
         if not self._cached_user_info:
-            self._cached_user_info = self.connector.get_user(self.id)
+            self._cached_user_info = connector.get_user(self.id)
 
 
 class AbstractKeycloakUserAutoId(AbstractKeycloakUser):
