@@ -6,6 +6,7 @@ from django_keycloak.mixins import KeycloakTestMixin
 
 class TestInit(KeycloakTestMixin, TestCase):
     def setUp(self):
+        self.connector = KeycloakAdminConnector()
         self.keycloak_init()
 
     def tearDown(self):
@@ -19,6 +20,6 @@ class TestInit(KeycloakTestMixin, TestCase):
             first_name="Owner",
             last_name="AAAA",
         )
-        KeycloakAdminConnector.update_user(user_a["id"], {"emailVerified": True})
+        self.connector.update_user(user_a["id"], {"emailVerified": True})
         valid_token = Token.from_credentials(username="ownerA", password="PWowNerA0!")
         self.assertTrue(valid_token)
