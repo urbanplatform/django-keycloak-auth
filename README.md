@@ -41,7 +41,6 @@ This package should only be used in projects starting from scratch, since it ove
         'CLIENT_ADMIN_ROLE': '<CLIENT_ADMIN_ROLE>',
         'REALM_ADMIN_ROLE': '<REALM_ADMIN_ROLE>',
         'EXEMPT_URIS': [],  # URIS to be ignored by the package
-        'GRAPHQL_ENDPOINT': 'graphql/'  # Default graphQL endpoint
     }
     ```
 
@@ -51,9 +50,7 @@ This package should only be used in projects starting from scratch, since it ove
     AUTH_USER_MODEL = "django_keycloak.KeycloakUserAutoId"
     ```
 
-7. If you are using Graphene, add the `GRAPHQL_ENDPOINT` to settings and `KeycloakGrapheneMiddleware` to the Graphene's `MIDDLEWARE`.
-
-8. Configure Django-Rest-Framework authentication classes with `django_keycloak.authentication.KeycloakAuthentication`:
+7. Configure Django-Rest-Framework authentication classes with `django_keycloak.authentication.KeycloakAuthentication`:
 
     ```python
     REST_FRAMEWORK = {

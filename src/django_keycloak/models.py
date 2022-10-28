@@ -4,11 +4,15 @@ from django.db.models import Q
 from django.utils.translation import gettext_lazy as _
 from dry_rest_permissions.generics import authenticated_users
 
-from django_keycloak.keycloak import Connect
+from .connector import lazy_keycloak_admin
 from .managers import KeycloakUserManager, KeycloakUserManagerAutoId
 
 
 class AbstractKeycloakUser(AbstractBaseUser, PermissionsMixin):
+    """
+    Abstract Keycloak user.
+    """
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self._cached_user_info = None
@@ -36,7 +40,6 @@ class AbstractKeycloakUser(AbstractBaseUser, PermissionsMixin):
         abstract = True
 
     def update_keycloak(self, email=None, first_name=None, last_name=None):
-        keycloak = Connect()
         values = {}
         if email is not None:
             values["email"] = email
@@ -44,11 +47,10 @@ class AbstractKeycloakUser(AbstractBaseUser, PermissionsMixin):
             values["firstName"] = first_name
         if last_name is not None:
             values["lastName"] = last_name
-        return keycloak.update_user(self.keycloak_identifier, **values)
+        return lazy_keycloak_admin.update_user(self.keycloak_identifier, **values)
 
     def delete_keycloak(self):
-        keycloak = Connect()
-        keycloak.delete_user(self.keycloak_identifier)
+        lazy_keycloak_admin.delete_user(self.keycloak_identifier)
 
 
 class KeycloakUser(AbstractKeycloakUser):
@@ -74,8 +76,7 @@ class KeycloakUser(AbstractKeycloakUser):
 
     def _confirm_cache(self):
         if not self._cached_user_info:
-            keycloak = Connect()
-            self._cached_user_info = keycloak.get_user_info_by_id(self.id)
+            self._cached_user_info = lazy_keycloak_admin.get_user(self.id)
 
 
 class AbstractKeycloakUserAutoId(AbstractKeycloakUser):
@@ -100,11 +101,6 @@ class AbstractKeycloakUserAutoId(AbstractKeycloakUser):
     @property
     def keycloak_identifier(self):
         return self.keycloak_id
-
-    def _confirm_cache(self):
-        if not self._cached_user_info:
-            keycloak = Connect()
-            self._cached_user_info = keycloak.get_user_info_by_id(self.keycloak_id)
 
     class Meta:
         abstract = True
