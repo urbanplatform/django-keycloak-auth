@@ -32,7 +32,7 @@ class LazyKeycloakAdmin(KeycloakAdmin):
     def __getattribute__(self, item):
         """
         Intercepts a method call for `KeycloakAdmin`.
-        If no instance as been previously initialized, we
+        If no instance has been previously initialized, we
         call the parent constructor to create a new one, and
         save a flag to re-use the same instance on following requests.
         """
