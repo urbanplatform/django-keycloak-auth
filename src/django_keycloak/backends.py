@@ -62,10 +62,7 @@ class KeycloakAuthenticationBackend(RemoteUserBackend):
             # `create_from_token` takes cares of password hashing
             user = User.objects.create_from_token(token)
 
-        if token.is_superuser:
-            user.is_staff = user.is_superuser = True
-        else:
-            user.is_staff = user.is_superuser = False
+        user.is_staff = user.is_superuser = bool(token.is_superuser)
 
         user.save()
         return user
