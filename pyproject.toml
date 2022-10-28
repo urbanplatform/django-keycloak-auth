@@ -9,7 +9,6 @@ description = "Middleware to allow authorization using Keycloak and Django"
 authors = [
   "Ubiwhere <urbanplatform@ubiwhere.com>",
   "Moritz Ulmer <moritz.ulmer@posteo.de>",
-  "Diogo Silva <diogosilv30@gmail.com>",
 ]
 license = "MIT"
 repository = "https://github.com/urbanplatform/django-keycloak-auth"

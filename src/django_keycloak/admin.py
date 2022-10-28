@@ -33,7 +33,9 @@ class UserAdmin(admin.ModelAdmin):
     search_fields = ["username", "email"]
 
     def keycloak_link(self, obj):
-
+        """
+        Adds an hyperlink to django-admin, which open the Keycloak's user profiles on Keycloak's Admin Console.
+        """
         base_path = settings.BASE_PATH
         server = settings.SERVER_URL
         realm = settings.REALM

@@ -13,6 +13,10 @@ class KeycloakAuthentication(TokenAuthentication):
     A custom token authentication class for Keycloak.
     """
 
+    # `keyword` refeers to expected prefix in HTTP
+    # Authentication header. We use `Bearer` because it
+    # is commonly used in authorization protocols, such
+    # as OAuth2
     keyword = "Bearer"
 
     def authenticate_credentials(self, access_token: str):

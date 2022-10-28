@@ -33,7 +33,10 @@ class KeycloakTestMixin:
         enabled: bool = True,
         actions: Optional[str] = None,
     ) -> dict:
-        """Creates user on keycloak server, No state is changed on local db"""
+        """
+        Creates user on Keycloak's server.
+        No state is changed on local database.
+        """
         values = {"username": username, "email": email, "enabled": enabled}
         if password is not None:
             values["credentials"] = [

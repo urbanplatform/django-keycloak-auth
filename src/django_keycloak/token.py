@@ -41,7 +41,8 @@ class Token:
     @ttl_cache(maxsize=1, ttl=60)
     def public_key(self):
         """
-        Formats the public
+        Obtains the Keycloak's Public key, used for token
+        decodings.
 
         Raises:
             KeycloakError: On Keycloak API errors
@@ -114,13 +115,14 @@ class Token:
             info = self.get_access_token_info()
         except (JOSEError, KeycloakError) as err:
             logger.debug(
-                f"{type(err).__name__}: {err.args}", exc_info=settings.TRACE_DEBUG_LOGS
+                "%s: %s",
+                type(err).__name__,
+                err.args,
+                exc_info=settings.TRACE_DEBUG_LOGS,
             )
             return False
         # Keycloak introspections return {"active": bool}
-        if "active" in info:
-            return info["active"]
-        return True
+        return info["active"] if "active" in info else True
 
     @property
     def user_info(self) -> dict:

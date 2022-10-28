@@ -20,16 +20,16 @@ class KeycloakAuthenticationBackend(RemoteUserBackend):
         password: Optional[str] = None,
     ):
         """
-        Authenticates an user by credentials, and
-        updates it's information (first name, last name, email).
+        Authenticates a user by credentials, and
+        updates their information (first name, last name, email).
         If user does not exist it is created with appropriate permissions.
 
         Parameters
         ----------
         remote_user: str
-            The keycloak username.
+            The Keycloak's username.
         password: str
-            The keycloak password.
+            The Keycloak's password.
         """
 
         # Create token from the provided credentials and check if
