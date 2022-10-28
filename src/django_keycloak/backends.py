@@ -36,7 +36,7 @@ class KeycloakAuthenticationBackend(RemoteUserBackend):
         # credentials were valid
         token = Token.from_credentials(remote_user, password)  # type: ignore
 
-        # Check for non-existing or unactive token
+        # Check for non-existing or inactive token
         if not token:
             # credentials were not valid
             return
