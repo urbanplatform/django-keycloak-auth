@@ -10,12 +10,12 @@ class Simple(APIView):
 class WhoAmI(APIView):
     def get(self, request):
         if request.user.is_anonymous:
-            return Response({"is_anonymous": True})
+            return Response({"isAnonymous": True})
         user_data = {
-            "is_anonymous": False,
+            "isAnonymous": False,
             "username": request.user.username,
             "email": request.user.email,
-            "first_name": request.user.first_name,
-            "last_name": request.user.last_name,
+            "firstName": request.user.first_name,
+            "lastName": request.user.last_name,
         }
         return Response(user_data)

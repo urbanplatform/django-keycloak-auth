@@ -53,7 +53,6 @@ class LazyKeycloakAdmin(KeycloakAdmin):
                 raise error
 
 
-# lazy_keycloak_admin = lazy_init(KeycloakAdmin)(
 lazy_keycloak_admin = LazyKeycloakAdmin(
     server_url=settings.KEYCLOAK_URL,
     client_id=settings.CLIENT_ID,

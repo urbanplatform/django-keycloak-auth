@@ -4,12 +4,14 @@ sync user information between keycloak and local database.
 """
 import base64
 import re
-from typing import Union, Optional
+from typing import Optional, Union
+
 from django.contrib.auth import get_user_model
 from django.utils.deprecation import MiddlewareMixin
-from django_keycloak.models import KeycloakUserAutoId, KeycloakUser
+
 from django_keycloak import Token
 from django_keycloak.config import settings
+from django_keycloak.models import KeycloakUser, KeycloakUserAutoId
 
 
 class KeycloakMiddleware(MiddlewareMixin):
