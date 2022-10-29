@@ -13,6 +13,8 @@ from django_keycloak import Token
 from django_keycloak.config import settings
 from django_keycloak.models import KeycloakUser, KeycloakUserAutoId
 
+AUTH_HEADER = "HTTP_AUTHORIZATION"
+
 
 class KeycloakMiddleware(MiddlewareMixin):
     """
@@ -27,10 +29,10 @@ class KeycloakMiddleware(MiddlewareMixin):
         If the authorization is "Basic" (username+password) it tries
         to authenticate the user
         """
-        if "HTTP_AUTHORIZATION" not in request.META:
+        if not self.has_auth_header(request):
             return None
 
-        auth_type, value, *_ = request.META.get("HTTP_AUTHORIZATION").split()
+        auth_type, value, *_ = request.META.get(AUTH_HEADER).split()
 
         if auth_type == "Basic":
             decoded_username, decoded_password = (
@@ -40,10 +42,10 @@ class KeycloakMiddleware(MiddlewareMixin):
             token = Token.from_credentials(decoded_username, decoded_password)
             if token:
                 # Convert the request "Basic" auth to "Bearer" with access token
-                request.META["HTTP_AUTHORIZATION"] = f"Bearer {token.access_token}"
+                request.META[AUTH_HEADER] = f"Bearer {token.access_token}"
             else:
                 # Setup an invalid dummy bearer token
-                request.META["HTTP_AUTHORIZATION"] = "Bearer not-valid-token"
+                request.META[AUTH_HEADER] = "Bearer not-valid-token"
 
         elif auth_type == "Bearer":
             token = Token.from_access_token(value)
@@ -98,7 +100,7 @@ class KeycloakMiddleware(MiddlewareMixin):
     @staticmethod
     def has_auth_header(request) -> bool:
         """Check if exists an authentication header in the HTTP request"""
-        return "HTTP_AUTHORIZATION" in request.META
+        return AUTH_HEADER in request.META
 
     def process_request(self, request):
         """
@@ -108,8 +110,8 @@ class KeycloakMiddleware(MiddlewareMixin):
         # 1. It is a URL in "EXEMPT_URIS"
         # 2. Request does not contain authorization header
         # Also skip auth for "EXEMPT_URIS" defined in configs
-        # if self.pass_auth(request) or not self.has_auth_header(request):
-        #     return
+        if self.pass_auth(request) or not self.has_auth_header(request):
+            return
 
         token: Union[Token, None] = self.get_token_from_request(request)
 
