@@ -2,13 +2,13 @@
 Module containing custom Django authentication backends.
 """
 from typing import Optional, Union
-from django.contrib.auth.backends import RemoteUserBackend
+from django.contrib.auth.backends import BaseBackend
 from django.contrib.auth import get_user_model
 from django_keycloak.models import KeycloakUserAutoId, KeycloakUser
 from django_keycloak import Token
 
 
-class KeycloakAuthenticationBackend(RemoteUserBackend):
+class KeycloakAuthenticationBackend(BaseBackend):
     """
     Custom remote backend for Keycloak
     """
@@ -16,7 +16,7 @@ class KeycloakAuthenticationBackend(RemoteUserBackend):
     def authenticate(
         self,
         request,
-        remote_user: Optional[str] = None,
+        username: Optional[str] = None,
         password: Optional[str] = None,
     ):
         """
@@ -26,7 +26,7 @@ class KeycloakAuthenticationBackend(RemoteUserBackend):
 
         Parameters
         ----------
-        remote_user: str
+        username: str
             The Keycloak's username.
         password: str
             The Keycloak's password.
@@ -34,7 +34,7 @@ class KeycloakAuthenticationBackend(RemoteUserBackend):
 
         # Create token from the provided credentials and check if
         # credentials were valid
-        token = Token.from_credentials(remote_user, password)  # type: ignore
+        token = Token.from_credentials(username, password)  # type: ignore
 
         # Check for non-existing or inactive token
         if not token:
@@ -46,7 +46,7 @@ class KeycloakAuthenticationBackend(RemoteUserBackend):
 
         # try to get user from database
         try:
-            user = User.objects.get(username=remote_user)
+            user = User.objects.get(username=username)
             if isinstance(user, KeycloakUserAutoId):
                 # Get user information from token
                 user_info = token.user_info

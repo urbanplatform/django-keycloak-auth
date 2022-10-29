@@ -27,6 +27,9 @@ class KeycloakMiddleware(MiddlewareMixin):
         If the authorization is "Basic" (username+password) it tries
         to authenticate the user
         """
+        if "HTTP_AUTHORIZATION" not in request.META:
+            return None
+
         auth_type, value, *_ = request.META.get("HTTP_AUTHORIZATION").split()
 
         if auth_type == "Basic":
