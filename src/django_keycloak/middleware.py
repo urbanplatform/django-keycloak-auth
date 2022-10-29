@@ -108,8 +108,8 @@ class KeycloakMiddleware(MiddlewareMixin):
         # 1. It is a URL in "EXEMPT_URIS"
         # 2. Request does not contain authorization header
         # Also skip auth for "EXEMPT_URIS" defined in configs
-        if self.pass_auth(request) or not self.has_auth_header(request):
-            return
+        # if self.pass_auth(request) or not self.has_auth_header(request):
+        #     return
 
         token: Union[Token, None] = self.get_token_from_request(request)
 
