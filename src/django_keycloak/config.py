@@ -46,7 +46,7 @@ class Settings:
     def __post_init__(self) -> None:
         # Decide URL (internal url overrides serverl url)
         URL = self.INTERNAL_URL if self.INTERNAL_URL else self.SERVER_URL
-        self.KEYCLOAK_URL = f"{URL}{self.BASE_PATH}"
+        self.KEYCLOAK_URL = f"{URL}/{self.BASE_PATH}/"
 
 
 # Get keycloak configs from django
