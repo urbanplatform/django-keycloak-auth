@@ -25,7 +25,7 @@ class Settings:
     CLIENT_ADMIN_ROLE: str
     # The name of the admin role for the realm
     REALM_ADMIN_ROLE: str
-    # Regex formatted URLs to skip authentication for (uses re.match())
+    # Regex formatted URLs to skip authentication (uses re.match())
     EXEMPT_URIS: Optional[List] = field(default_factory=list)
     # Overrides SERVER_URL for Keycloak admin calls
     INTERNAL_URL: Optional[str] = None

@@ -1,4 +1,4 @@
-# [WIP] Django Keycloak Authorization
+# Django Keycloak Authorization
 
 Middleware to allow authorization using Keycloak and Django for django-rest-framework (DRF) and Graphene-based projects.
 This package should only be used in projects starting from scratch, since it overrides the users' management.
@@ -51,7 +51,7 @@ This package should only be used in projects starting from scratch, since it ove
         'CLIENT_ADMIN_ROLE': '<CLIENT_ADMIN_ROLE>',
         # The name of the admin role for the realm
         'REALM_ADMIN_ROLE': '<REALM_ADMIN_ROLE>',
-        # Regex formatted URLs to skip authentication for (uses re.match())
+        # Regex formatted URLs to skip authentication
         'EXEMPT_URIS': [],
         # Flag if the token should be introspected or decoded (default is False)
         'DECODE_TOKEN': False,
