@@ -217,7 +217,10 @@ class Token:
         # and post error (account not completed.)
         except (KeycloakAuthenticationError, KeycloakPostError) as err:
             logger.debug(
-                f"{type(err).__name__}: {err.args}", exc_info=settings.TRACE_DEBUG_LOGS
+                "%s: %s",
+                type(err).__name__,
+                err.args,
+                exc_info=settings.TRACE_DEBUG_LOGS,
             )
             return None
 

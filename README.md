@@ -1,4 +1,4 @@
-# [WIP] Django Keycloak Authorization
+# Django Keycloak Authorization
 
 Middleware to allow authorization using Keycloak and Django for django-rest-framework (DRF) and Graphene-based projects.
 This package should only be used in projects starting from scratch, since it overrides the users' management.
@@ -32,15 +32,35 @@ This package should only be used in projects starting from scratch, since it ove
 
     ```python
     KEYCLOAK_CONFIG = {
+        # The Keycloak's Public Server URL (e.g. http://localhost:8080)
         'SERVER_URL': '<PUBLIC_SERVER_URL>',
-        'INTERNAL_URL': '<INTERNAL_SERVER_URL>', # Optional: Default is SERVER_URL
-        'BASE_PATH': '', # Optional: Default matches Keycloak's default '/auth'
+        # The Keycloak's Internal URL 
+        # (e.g. http://keycloak:8080 for a docker service named keycloak)
+        # Optional: Default is SERVER_URL
+        'INTERNAL_URL': '<INTERNAL_SERVER_URL>',
+        # Override for default Keycloak's base path
+        # Default is '/auth/'
+        'BASE_PATH': '/auth/',
+        # The name of the Keycloak's realm
         'REALM': '<REALM_NAME>',
-        'CLIENT_ID': '<CLIENT_ID>',
+        # The ID of this client in the above Keycloak realm
+        'CLIENT_ID': '<CLIENT_ID>' 
+        # The secret for this confidential client
         'CLIENT_SECRET_KEY': '<CLIENT_SECRET_KEY>',
+        # The name of the admin role for the client
         'CLIENT_ADMIN_ROLE': '<CLIENT_ADMIN_ROLE>',
+        # The name of the admin role for the realm
         'REALM_ADMIN_ROLE': '<REALM_ADMIN_ROLE>',
-        'EXEMPT_URIS': [],  # URIS to be ignored by the package
+        # Regex formatted URLs to skip authentication
+        'EXEMPT_URIS': [],
+        # Flag if the token should be introspected or decoded (default is False)
+        'DECODE_TOKEN': False,
+        # Flag if the audience in the token should be verified (default is True)
+        'VERIFY_AUDIENCE': True,
+        # Flag if the user info has been included in the token (default is True)
+        'USER_INFO_IN_TOKEN': True,
+        # Flag to show the traceback of debug logs (default is False)
+        'TRACE_DEBUG_LOGS': False
     }
     ```
 
@@ -54,19 +74,10 @@ This package should only be used in projects starting from scratch, since it ove
 
     ```python
     REST_FRAMEWORK = {
+        # ... other rest framework settings.
         'DEFAULT_AUTHENTICATION_CLASSES': [
             'django_keycloak.authentication.KeycloakAuthentication'
         ],
-        'DEFAULT_RENDERER_CLASSES': [
-            'rest_framework.renderers.JSONRenderer',
-        ],
-        'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.LimitOffsetPagination',
-        'PAGE_SIZE': 100,  # Default to 20
-        'PAGINATE_BY_PARAM': 'page_size',
-        # Allow client to override, using `?page_size=xxx`.
-        'MAX_PAGINATE_BY': 100,
-        # Maximum limit allowed when using `?page_size=xxx`.
-        'TEST_REQUEST_DEFAULT_FORMAT': 'json'
     }
     ```
 
@@ -124,7 +135,7 @@ try to login.
 
 ## Notes
 
-Support for celery 5: from version 0.7.4 on we should use celery 5 for the user sync. This implies running celery with celery -A app worker ... instead of celery worker -A app ...
+Support for celery 5: from version 0.7.4 on we should use celery 5 for the user sync. This implies running celery with `celery -A app worker ...` instead of `celery worker -A app ...`
 
 ## Contact
 

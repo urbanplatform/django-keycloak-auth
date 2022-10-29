@@ -25,7 +25,7 @@ class Settings:
     CLIENT_ADMIN_ROLE: str
     # The name of the admin role for the realm
     REALM_ADMIN_ROLE: str
-    # Regex formatted URLs to skip authentication for (uses re.match())
+    # Regex formatted URLs to skip authentication (uses re.match())
     EXEMPT_URIS: Optional[List] = field(default_factory=list)
     # Overrides SERVER_URL for Keycloak admin calls
     INTERNAL_URL: Optional[str] = None
@@ -43,9 +43,38 @@ class Settings:
     # Derived setting of the SERVER/INTERNAL_URL and BASE_PATH
     KEYCLOAK_URL: str = field(init=False)
 
+    def __force_starting_and_ending_slash(self, string: str) -> str:
+        """
+        Forces a given string to start and end with a slash "/"
+
+        Parameters
+        ----------
+        string: str
+            A string to force the starting and ending slash.
+
+        Returns
+        -------
+        str
+            The transformed string starting and ending with a slash.
+        """
+        if not string.endswith("/"):
+            string += "/"
+        if not string.startswith("/"):
+            string = "/" + string
+        return string
+
     def __post_init__(self) -> None:
-        # Decide URL (internal url overrides serverl url)
+
+        # Make sure "BASE_PATH" starts and ends with a slash
+        self.BASE_PATH = self.__force_starting_and_ending_slash(self.BASE_PATH)
+        # Make sure both "SERVER_URL" and "INTERNAL_URL" don't contain any
+        # trailing slash
+        self.SERVER_URL = self.SERVER_URL.rstrip("/")
+        self.INTERNAL_URL = self.INTERNAL_URL.rstrip("/")
+
+        # Decide URL (internal url overrides server url)
         URL = self.INTERNAL_URL if self.INTERNAL_URL else self.SERVER_URL
+
         self.KEYCLOAK_URL = f"{URL}{self.BASE_PATH}"
 
 
