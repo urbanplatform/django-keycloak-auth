@@ -1,4 +1,4 @@
-# [WIP] Django Keycloak Authorization
+# Django Keycloak Authorization
 
 Middleware to allow authorization using Keycloak and Django for django-rest-framework (DRF) and Graphene-based projects.
 This package should only be used in projects starting from scratch, since it overrides the users' management.
