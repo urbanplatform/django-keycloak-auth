@@ -60,7 +60,9 @@ This package should only be used in projects starting from scratch, since it ove
         # Flag if the user info has been included in the token (default is True)
         'USER_INFO_IN_TOKEN': True,
         # Flag to show the traceback of debug logs (default is False)
-        'TRACE_DEBUG_LOGS': False
+        'TRACE_DEBUG_LOGS': False,
+        # The token prefix that is expected in Authorization header (default is 'Bearer')
+        'TOKEN_PREFIX': 'Bearer'
     }
     ```
 

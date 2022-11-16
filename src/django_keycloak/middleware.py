@@ -12,6 +12,8 @@ from django.utils.deprecation import MiddlewareMixin
 from django_keycloak import Token
 from django_keycloak.config import settings
 from django_keycloak.models import KeycloakUser, KeycloakUserAutoId
+from django_keycloak.config import settings
+from django_keycloak.errors import KeycloakError
 
 AUTH_HEADER = "HTTP_AUTHORIZATION"
 
@@ -41,14 +43,18 @@ class KeycloakMiddleware(MiddlewareMixin):
             # Try to build a Token instance from decoded credentials
             token = Token.from_credentials(decoded_username, decoded_password)
             if token:
-                # Convert the request "Basic" auth to "Bearer" with access token
-                request.META[AUTH_HEADER] = f"Bearer {token.access_token}"
+                # Convert the request "Basic" auth to token-based with access token
+                request.META[
+                    AUTH_HEADER
+                ] = f"{settings.TOKEN_PREFIX} {token.access_token}"
             else:
-                # Setup an invalid dummy bearer token
-                request.META[AUTH_HEADER] = "Bearer not-valid-token"
+                # Setup an invalid dummy token
+                request.META[AUTH_HEADER] = f"{settings.TOKEN_PREFIX} not-valid-token"
 
-        elif auth_type == "Bearer":
+        elif auth_type == settings.TOKEN_PREFIX:
             token = Token.from_access_token(value)
+        else:
+            token = None
 
         return token
 

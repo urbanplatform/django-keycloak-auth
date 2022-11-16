@@ -6,6 +6,7 @@ from django.contrib.auth import get_user_model
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.exceptions import AuthenticationFailed
 from django_keycloak import Token
+from django_keycloak.config import settings
 
 
 class KeycloakAuthentication(TokenAuthentication):
@@ -13,16 +14,14 @@ class KeycloakAuthentication(TokenAuthentication):
     A custom token authentication class for Keycloak.
     """
 
-    # `keyword` refeers to expected prefix in HTTP
-    # Authentication header. We use `Bearer` because it
-    # is commonly used in authorization protocols, such
-    # as OAuth2
-    keyword = "Bearer"
+    # `keyword` refers to expected prefix in HTTP
+    # Authentication header. Use the user-defined prefix
+    keyword = settings.TOKEN_PREFIX
 
     def authenticate_credentials(self, access_token: str):
         """
         Overrides `authenticate_credentials` to provide custom
-        Keycloak authentication for a given Bearer token in a request.
+        Keycloak authentication for a given token in a request.
         """
         # Try to build a Token instance from the provided access token in request
         token: Union[Token, None] = Token.from_access_token(access_token)
