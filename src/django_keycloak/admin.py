@@ -11,6 +11,8 @@ from django_keycloak.config import settings
 
 User = get_user_model()
 
+logger = logging.getLogger(__name__)
+
 
 class UserAdmin(admin.ModelAdmin):
     list_display = (
@@ -64,4 +66,4 @@ class UserAdmin(admin.ModelAdmin):
 try:
     admin.site.register(User, UserAdmin)
 except admin.sites.AlreadyRegistered:
-    logging.warning(f"Could not register Keycloak UserAdmin")
+    logger.warning(f"Could not register Keycloak UserAdmin")
