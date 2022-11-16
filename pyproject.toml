@@ -4,7 +4,7 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
 name = "django_uw_keycloak"
-version = "2.0.1"
+version = "2.0.2"
 description = "Middleware to allow authorization using Keycloak and Django"
 authors = [
   "Ubiwhere <urbanplatform@ubiwhere.com>",
