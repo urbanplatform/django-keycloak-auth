@@ -4,14 +4,6 @@ Module containing custom errors.
 import django_keycloak.config as config
 
 
-class KeycloakError(Exception):
-    """
-    Base exception for the library
-    """
-
-    pass
-
-
 class KeycloakAPIError(Exception):
     """
     This should be raised on KeycloakAPIErrors
