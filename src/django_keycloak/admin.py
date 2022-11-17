@@ -1,6 +1,7 @@
 """
 Module to register models into Django admin dashboard.
 """
+import logging
 from django.contrib import admin
 from django.contrib.auth import get_user_model
 from django.utils.html import format_html
@@ -9,6 +10,8 @@ from django.utils.translation import gettext_lazy as _
 from django_keycloak.config import settings
 
 User = get_user_model()
+
+logger = logging.getLogger(__name__)
 
 
 class UserAdmin(admin.ModelAdmin):
@@ -60,4 +63,7 @@ class UserAdmin(admin.ModelAdmin):
         return False
 
 
-admin.site.register(User, UserAdmin)
+try:
+    admin.site.register(User, UserAdmin)
+except admin.sites.AlreadyRegistered:
+    logger.warning(f"Could not register Keycloak UserAdmin")
