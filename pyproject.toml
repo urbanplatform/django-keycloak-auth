@@ -36,6 +36,6 @@ python-keycloak = ">=2.6.0"
 cachetools = ">=5.0.0"
 
 [tool.poetry.dev-dependencies]
-black = "~=22.6"
+black = "~=22.12"
 coverage = "~=6.4"
 ipdb = "*"
