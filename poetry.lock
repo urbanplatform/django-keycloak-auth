@@ -76,7 +76,7 @@ optional = false
 python-versions = ">=3.6.0"
 
 [package.extras]
-unicode_backport = ["unicodedata2"]
+unicode-backport = ["unicodedata2"]
 
 [[package]]
 name = "click"
@@ -384,7 +384,7 @@ pycryptodome = ["pyasn1", "pycryptodome (>=3.3.1,<4.0.0)"]
 
 [[package]]
 name = "python-keycloak"
-version = "2.6.0"
+version = "2.8.0"
 description = "python-keycloak is a Python package providing access to the Keycloak API."
 category = "main"
 optional = false
@@ -397,7 +397,7 @@ requests-toolbelt = ">=0.9.1,<0.10.0"
 urllib3 = ">=1.26.0,<2.0.0"
 
 [package.extras]
-docs = ["Sphinx (>=5.0.2,<6.0.0)", "alabaster (>=0.7.12,<0.8.0)", "commonmark (>=0.9.1,<0.10.0)", "m2r2 (>=0.3.2,<0.4.0)", "mock (>=4.0.3,<5.0.0)", "readthedocs-sphinx-ext (>=2.1.8,<3.0.0)", "recommonmark (>=0.7.1,<0.8.0)", "sphinx-autoapi (>=1.8.4,<2.0.0)", "sphinx-rtd-theme (>=1.0.0,<2.0.0)"]
+docs = ["Sphinx (>=5.3.0,<6.0.0)", "alabaster (>=0.7.12,<0.8.0)", "commonmark (>=0.9.1,<0.10.0)", "m2r2 (>=0.3.2,<0.4.0)", "mock (>=4.0.3,<5.0.0)", "readthedocs-sphinx-ext (>=2.1.9,<3.0.0)", "recommonmark (>=0.7.1,<0.8.0)", "sphinx-autoapi (>=2.0.0,<3.0.0)", "sphinx-rtd-theme (>=1.0.0,<2.0.0)"]
 
 [[package]]
 name = "pytz"
@@ -423,7 +423,7 @@ urllib3 = ">=1.21.1,<1.27"
 
 [package.extras]
 socks = ["PySocks (>=1.5.6,!=1.5.7)"]
-use_chardet_on_py3 = ["chardet (>=3.0.2,<6)"]
+use-chardet-on-py3 = ["chardet (>=3.0.2,<6)"]
 
 [[package]]
 name = "requests-toolbelt"
@@ -754,8 +754,8 @@ python-jose = [
     {file = "python_jose-3.3.0-py2.py3-none-any.whl", hash = "sha256:9b1376b023f8b298536eedd47ae1089bcdb848f1535ab30555cd92002d78923a"},
 ]
 python-keycloak = [
-    {file = "python-keycloak-2.6.0.tar.gz", hash = "sha256:08c530ff86f631faccb8033d9d9345cc3148cb2cf132ff7564f025292e4dbd96"},
-    {file = "python_keycloak-2.6.0-py3-none-any.whl", hash = "sha256:a1ce102b978beb56d385319b3ca20992b915c2c12d15a2d0c23f1104882f3fb6"},
+    {file = "python_keycloak-2.8.0-py3-none-any.whl", hash = "sha256:73baa30d5a45ac7e1167ad99ef39013cd7621c2cfc44745680b0351a3959e0c9"},
+    {file = "python_keycloak-2.8.0.tar.gz", hash = "sha256:093b5cb554a9e6d736d02da5d2b357bb39442bda62cc97174597438e14b6ccf6"},
 ]
 pytz = [
     {file = "pytz-2022.5-py2.py3-none-any.whl", hash = "sha256:335ab46900b1465e714b4fda4963d87363264eb662aab5e65da039c25f1f5b22"},
