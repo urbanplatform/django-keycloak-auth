@@ -37,5 +37,5 @@ cachetools = ">=5.0.0"
 
 [tool.poetry.dev-dependencies]
 black = "~=22.6"
-coverage = "~=6.4"
+coverage = "~=7.1"
 ipdb = "*"
