@@ -32,9 +32,9 @@ This package should only be used in projects starting from scratch, since it ove
 
     ```python
     KEYCLOAK_CONFIG = {
-        # The Keycloak's Public Server URL (e.g. http://localhost:8080)
+        # Keycloak's Public Server URL (e.g. http://localhost:8080)
         'SERVER_URL': '<PUBLIC_SERVER_URL>',
-        # The Keycloak's Internal URL 
+        # Keycloak's Internal URL
         # (e.g. http://keycloak:8080 for a docker service named keycloak)
         # Optional: Default is SERVER_URL
         'INTERNAL_URL': '<INTERNAL_SERVER_URL>',
@@ -44,7 +44,7 @@ This package should only be used in projects starting from scratch, since it ove
         # The name of the Keycloak's realm
         'REALM': '<REALM_NAME>',
         # The ID of this client in the above Keycloak realm
-        'CLIENT_ID': '<CLIENT_ID>' 
+        'CLIENT_ID': '<CLIENT_ID>',
         # The secret for this confidential client
         'CLIENT_SECRET_KEY': '<CLIENT_SECRET_KEY>',
         # The name of the admin role for the client
@@ -138,6 +138,16 @@ try to login.
 ## Notes
 
 Support for celery 5: from version 0.7.4 on we should use celery 5 for the user sync. This implies running celery with `celery -A app worker ...` instead of `celery worker -A app ...`
+
+## Development
+
+### Making Migrations
+
+Save the changes in the respective model and run the command below.
+
+```py
+python makemigrations.py
+```
 
 ## Contact
 
