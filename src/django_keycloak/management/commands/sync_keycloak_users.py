@@ -10,7 +10,6 @@ class Command(BaseCommand):
     help = "Synchronize users with keycloak"
 
     def handle(self, *args, **options):
-
         User = get_user_model()
 
         remote_users = set([user.get("id") for user in lazy_keycloak_admin.get_users()])

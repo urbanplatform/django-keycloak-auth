@@ -1,3 +1,4 @@
+# https://realpython.com/installable-django-app/#bootstrapping-django-outside-of-a-project
 # This file sets up and configures Django. It's used by scripts that need to
 # execute as if running in a Django server.
 

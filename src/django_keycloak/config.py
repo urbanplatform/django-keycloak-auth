@@ -65,7 +65,6 @@ class Settings:
         return string
 
     def __post_init__(self) -> None:
-
         # Make sure "BASE_PATH" starts and ends with a slash
         self.BASE_PATH = self.__force_starting_and_ending_slash(self.BASE_PATH)
         # Make sure both "SERVER_URL" and "INTERNAL_URL" don't contain any
