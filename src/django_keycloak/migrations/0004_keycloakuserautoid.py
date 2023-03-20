@@ -5,7 +5,6 @@ import django_keycloak.managers
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("auth", "0011_update_proxy_permissions"),
         ("django_keycloak", "0003_auto_20210406_1426"),

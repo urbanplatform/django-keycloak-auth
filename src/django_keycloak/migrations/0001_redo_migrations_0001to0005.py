@@ -5,7 +5,6 @@ import django_keycloak.managers
 
 
 class Migration(migrations.Migration):
-
     replaces = [
         ("django_keycloak", "0001_initial"),
         ("django_keycloak", "0002_auto_20210209_1503"),
