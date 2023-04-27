@@ -1,0 +1,17 @@
+[run]
+source = ../src
+branch = True
+
+[report]
+exclude_lines =
+    if self.debug:
+    pragma: no cover
+    raise NotImplementedError
+    if __name__ == .__main__.:
+ignore_errors = True
+omit =
+    */tests/*
+    */migrations/*
+    */src/boot_django.py
+    */src/makemigrations.py
+precision = 1

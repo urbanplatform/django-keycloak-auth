@@ -166,6 +166,7 @@ keycloak_server = f"http://{os.getenv('KEYCLOAK_HOST')}:{os.getenv('KEYCLOAK_POR
 KEYCLOAK_CONFIG = {
     "SERVER_URL": keycloak_server,
     "INTERNAL_URL": keycloak_server,
+    "BASE_PATH": os.getenv("KEYCLOAK_BASE_PATH"),
     "REALM": os.getenv("KEYCLOAK_REALM"),
     "CLIENT_ID": os.getenv("KEYCLOAK_CLIENT_ID"),
     "CLIENT_SECRET_KEY": os.getenv("KEYCLOAK_CLIENT_SECRET_KEY"),

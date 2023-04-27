@@ -149,6 +149,15 @@ Save the changes in the respective model and run the command below.
 python makemigrations.py
 ```
 
+### Creating a Coverage Report
+
+Run all tests and create a coverage report at ./tests/htmlcov/index.html
+
+```sh
+./tests/start.sh coverage
+```
+
+
 ## Contact
 
 django-keycloak-auth [at] googlegroups [dot] com
