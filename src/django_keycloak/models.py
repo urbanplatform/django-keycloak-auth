@@ -18,7 +18,7 @@ class AbstractKeycloakUser(AbstractBaseUser, PermissionsMixin):
         self._cached_user_info = None
 
     id = models.UUIDField(_("keycloak_id"), unique=True, primary_key=True)
-    username = models.CharField(_("username"), unique=True, max_length=20)
+    username = models.CharField(_("username"), unique=True, max_length=32)
     is_staff = models.BooleanField(default=False)
     is_superuser = models.BooleanField(default=False)
     is_active = models.BooleanField(default=True)
