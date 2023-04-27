@@ -14,6 +14,19 @@ import os
 import sys
 from pathlib import Path
 
+# Only enable DebugPy for dev server's second process
+TESTING = sys.argv[1:2] == ["test"]
+if debugpy_env := os.getenv("DEBUGPY"):
+    if debugpy_env not in ["listen", "wait"]:
+        raise ValueError("DEBUGPY not valid [listen, wait]")
+    elif os.getenv("RUN_MAIN") or TESTING:
+        DEBUGPY = debugpy_env
+        DEBUGPY_PORT = int(os.getenv("DEBUGPY_PORT", 5678))
+    else:
+        DEBUGPY = False
+else:
+    DEBUGPY = False
+
 LOGGING = {
     "version": 1,
     "formatters": {

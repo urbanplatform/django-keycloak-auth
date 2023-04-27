@@ -35,10 +35,12 @@ dry-rest-permissions = ">=0.1"
 python-keycloak = ">=2.6.0"
 cachetools = ">=5.0.0"
 
-[tool.poetry.dev-dependencies]
+[tool.poetry.group.dev.dependencies]
 black = "~=23.1"
 coverage = "~=7.1"
+debugpy = "~=1.6"
 ipdb = "~=0.13"
+pip-check = "~=2.8"
 
 [tool.black]
 target-version = ['py37']

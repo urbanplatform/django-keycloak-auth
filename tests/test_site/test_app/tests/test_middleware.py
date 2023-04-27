@@ -1,7 +1,8 @@
 from django.test import TestCase
 from django.urls import reverse
-from django_keycloak.connector import lazy_keycloak_admin
+from django_keycloak.config import settings
 from django_keycloak.mixins import KeycloakTestMixin
+from keycloak import KeycloakOpenID
 
 
 class TestMiddleware(KeycloakTestMixin, TestCase):
@@ -15,6 +16,12 @@ class TestMiddleware(KeycloakTestMixin, TestCase):
             first_name="Owner",
             last_name="AAAA",
         )
+        self.keycloak_client = KeycloakOpenID(
+            server_url=settings.SERVER_URL,
+            client_id=settings.CLIENT_ID,
+            realm_name=settings.REALM,
+            client_secret_key=settings.CLIENT_SECRET_KEY,
+        )
 
     def tearDown(self):
         self.keycloak_cleanup()
@@ -24,7 +31,7 @@ class TestMiddleware(KeycloakTestMixin, TestCase):
         self.assertEqual(response.json()["status"], "ok")
 
     def test_user_auth(self):
-        tokens = lazy_keycloak_admin.keycloak_openid.token(
+        tokens = self.keycloak_client.token(
             username=self.keycloak_user["username"],
             password=self.user_password,
         )
