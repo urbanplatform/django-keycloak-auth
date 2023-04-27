@@ -12,7 +12,6 @@ from django.utils.deprecation import MiddlewareMixin
 from django_keycloak import Token
 from django_keycloak.config import settings
 from django_keycloak.models import KeycloakUser, KeycloakUserAutoId
-from django_keycloak.config import settings
 
 AUTH_HEADER = "HTTP_AUTHORIZATION"
 

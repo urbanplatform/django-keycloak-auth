@@ -41,6 +41,8 @@ class Settings:
     TRACE_DEBUG_LOGS: Optional[bool] = False
     # The token prefix
     TOKEN_PREFIX: Optional[str] = "Bearer"
+    # For the KeycloakAdmin, which HTTP methods to refresh the token for
+    AUTO_REFRESH_TOKEN: Optional[List[str]] = None
     # Derived setting of the SERVER/INTERNAL_URL and BASE_PATH
     KEYCLOAK_URL: str = field(init=False)
 

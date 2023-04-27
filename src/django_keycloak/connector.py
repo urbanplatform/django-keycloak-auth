@@ -70,10 +70,16 @@ class LazyKeycloakAdmin(KeycloakAdmin):
                 raise error
 
 
+options = {
+    "server_url": settings.KEYCLOAK_URL,
+    "client_id": settings.CLIENT_ID,
+    "realm_name": settings.REALM,
+    "client_secret_key": settings.CLIENT_SECRET_KEY,
+}
+# auto_refresh_token will be removed and be on by default in python-keycloak v3
+# Therefore, make it optional to avoid breaking compatibility
+if settings.AUTO_REFRESH_TOKEN:
+    options["auto_refresh_token"] = settings.AUTO_REFRESH_TOKEN
+
 # The exported module variable
-lazy_keycloak_admin = LazyKeycloakAdmin(
-    server_url=settings.KEYCLOAK_URL,
-    client_id=settings.CLIENT_ID,
-    realm_name=settings.REALM,
-    client_secret_key=settings.CLIENT_SECRET_KEY,
-)
+lazy_keycloak_admin = LazyKeycloakAdmin(**options)

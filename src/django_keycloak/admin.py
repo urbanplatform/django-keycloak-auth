@@ -66,4 +66,4 @@ class UserAdmin(admin.ModelAdmin):
 try:
     admin.site.register(User, UserAdmin)
 except admin.sites.AlreadyRegistered:
-    logger.warning(f"Could not register Keycloak UserAdmin")
+    logger.warning("Could not register Keycloak UserAdmin")

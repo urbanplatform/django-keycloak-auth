@@ -63,6 +63,9 @@ This package should only be used in projects starting from scratch, since it ove
         'TRACE_DEBUG_LOGS': False,
         # The token prefix that is expected in Authorization header (default is 'Bearer')
         'TOKEN_PREFIX': 'Bearer'
+        # For the KeycloakAdmin, which HTTP methods to refresh the token for
+        # Only used in Python-Keycloak < v3
+        'AUTO_REFRESH_TOKEN': ["get", "put", "post", "delete"]
     }
     ```
 

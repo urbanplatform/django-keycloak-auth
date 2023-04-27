@@ -1,15 +1,13 @@
 from django.contrib.auth import get_user_model
-from rest_framework import mixins, permissions
-from rest_framework import status
-from rest_framework import viewsets, generics
+from rest_framework import generics, mixins, permissions, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
 from django_keycloak.api.filters import DRYPermissionFilter
 from django_keycloak.api.serializers import (
     GetTokenSerializer,
-    RefreshTokenSerializer,
     KeycloakUserAutoIdSerializer,
+    RefreshTokenSerializer,
 )
 
 
