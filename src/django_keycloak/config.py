@@ -70,7 +70,8 @@ class Settings:
         # Make sure both "SERVER_URL" and "INTERNAL_URL" don't contain any
         # trailing slash
         self.SERVER_URL = self.SERVER_URL.rstrip("/")
-        self.INTERNAL_URL = self.INTERNAL_URL.rstrip("/")
+        if self.INTERNAL_URL:
+            self.INTERNAL_URL = self.INTERNAL_URL.rstrip("/")
 
         # Decide URL (internal url overrides server url)
         URL = self.INTERNAL_URL if self.INTERNAL_URL else self.SERVER_URL

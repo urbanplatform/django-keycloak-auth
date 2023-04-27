@@ -2,6 +2,7 @@
 Module containing custom object managers
 """
 from django.contrib.auth.models import UserManager
+
 from django_keycloak import Token
 
 
@@ -26,7 +27,7 @@ class KeycloakUserManager(UserManager):
             username=user_info.get("preferred_username"),
             is_staff=is_staff,
             is_superuser=is_superuser,
-            **kwargs
+            **kwargs,
         )
         user.save(using=self._db)
         return user
@@ -58,7 +59,7 @@ class KeycloakUserManagerAutoId(KeycloakUserManager):
             email=user_info.get("email"),
             is_staff=is_staff,
             is_superuser=is_superuser,
-            **kwargs
+            **kwargs,
         )
         user.save(using=self._db)
         return user

@@ -55,4 +55,5 @@ else
   echo "Realm '$KEYCLOAK_REALM' already imported into Keycloak"
 fi
 
+poetry run test_site/manage.py migrate
 poetry run test_site/manage.py test test_app
