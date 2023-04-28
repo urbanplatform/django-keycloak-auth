@@ -36,6 +36,9 @@ timeout --foreground 90 bash -c -- "\
     echo 'Waiting...'; sleep 2 & wait; \
   done"
 
+echo "Waiting 5s to ensure clean Keycloak startup"
+sleep 5
+
 if (($(curl -s -o /dev/null -w "%{http_code}" "$KEYCLOAK_URL/realms/$KEYCLOAK_REALM") != 200)); then
   echo "Importing debug Keycloak setup"
   # Get an access token
