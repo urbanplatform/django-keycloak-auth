@@ -24,16 +24,6 @@ jobs:
         python-version: ["3.8", "3.9", "3.10", "3.11"]
         keycloak-tag: ["17.0.1", "18.0.2", "19.0.3", "20.0.5", "21.1"]
 
-    services:
-      keycloak:
-        image: quay.io/keycloak/keycloak:${{ matrix.keycloak-tag }}
-        ports:
-          - 8080:8080
-          - 9990:9990
-        options: >-
-          -e "KEYCLOAK_ADMIN_USER=admin"
-          -e "KEYCLOAK_ADMIN_PASSWORD=admin"
-
     steps:
       - uses: actions/checkout@v3
 
@@ -57,4 +47,6 @@ jobs:
           poetry install
 
       - name: Test with pytest
+        env:
+          KEYCLOAK_DOCKER_TAG: ${{ matrix.keycloak-tag }}
         run: ./tests/start.sh

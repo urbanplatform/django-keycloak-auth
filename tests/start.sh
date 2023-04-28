@@ -5,9 +5,27 @@ set -eo pipefail
 # Ensure the script is running in this directory
 cd "$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")"
 
+KEYCLOAK_DEV_DOCKER_NAME=keycloak-dev
+KEYCLOAK_DOCKER_TAG=20.0.5-0
+
 if [[ -z $CI ]] && [[ -z $KEYCLOAK_ADMIN_PASSWORD ]]; then
   # Use Github Actions' env variables if not in CI or env already set
   eval $(yq '.jobs.test.env.[] | "export " + key + "=" + .' ../.github/workflows/test.yml)
+fi
+
+if ! docker ps -a --format '{{.Names}}' | grep -q "$KEYCLOAK_DEV_DOCKER_NAME"; then
+  echo "Starting Keycloak docker service: $KEYCLOAK_DOCKER_TAG"
+  docker run \
+    --rm \
+    --name "$KEYCLOAK_DEV_DOCKER_NAME" \
+    -p "$KEYCLOAK_HOST:$KEYCLOAK_PORT:$KEYCLOAK_PORT" \
+    -e "KEYCLOAK_ADMIN=$KEYCLOAK_ADMIN_USER" \
+    -e "KEYCLOAK_ADMIN_PASSWORD=$KEYCLOAK_ADMIN_PASSWORD" \
+    -d \
+    "quay.io/keycloak/keycloak:$KEYCLOAK_DOCKER_TAG" \
+    start-dev
+else
+  echo "Keycloak Docker service already running"
 fi
 
 KEYCLOAK_URL=http://$KEYCLOAK_HOST:$KEYCLOAK_PORT
