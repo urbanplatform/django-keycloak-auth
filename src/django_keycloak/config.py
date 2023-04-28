@@ -29,8 +29,8 @@ class Settings:
     EXEMPT_URIS: Optional[List] = field(default_factory=list)
     # Overrides SERVER_URL for Keycloak admin calls
     INTERNAL_URL: Optional[str] = None
-    # Override default Keycloak base path (/auth/)
-    BASE_PATH: Optional[str] = "/auth/"
+    # Override default Keycloak base path (legacy was /auth/)
+    BASE_PATH: str = ""
     # Flag if the token should be introspected or decoded
     DECODE_TOKEN: Optional[bool] = False
     # Flag if the audience in the token should be verified

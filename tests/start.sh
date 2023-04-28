@@ -12,12 +12,11 @@ fi
 
 KEYCLOAK_URL=http://$KEYCLOAK_HOST:$KEYCLOAK_PORT
 echo "Waiting for Keycloak to launch on $KEYCLOAK_URL..."
-# Abort after 10 seconds to avoid blocking (-m --> max time)
-while ! curl -s -f -o /dev/null -m 2 "$KEYCLOAK_URL/realms/master"; do
-  echo "Waiting..."
-  sleep 2 &
-  wait
-done
+# Abort after 60 seconds to avoid blocking (-m --> max time)
+timeout --foreground 60 bash -c -- "\
+  while ! curl -s -f -o /dev/null -m 2 \"$KEYCLOAK_URL/realms/master\"; do \
+    echo 'Waiting...'; sleep 2 & wait; \
+  done"
 
 if (($(curl -s -o /dev/null -w "%{http_code}" "$KEYCLOAK_URL/realms/$KEYCLOAK_REALM") != 200)); then
   echo "Importing debug Keycloak setup"
@@ -31,22 +30,8 @@ if (($(curl -s -o /dev/null -w "%{http_code}" "$KEYCLOAK_URL/realms/$KEYCLOAK_RE
     "$KEYCLOAK_URL/realms/master/protocol/openid-connect/token")
   KEYCLOAK_TOKEN=$(echo "$KEYCLOAK_TOKEN_RESPONSE" | jq -r .access_token)
 
-  # Get Keycloak server version to add the right config file
-  KEYCLOAK_VERSION="$(curl -s \
-    -H "Content-Type: application/json" \
-    -H "Authorization: bearer $KEYCLOAK_TOKEN" \
-    "$KEYCLOAK_URL/admin/serverinfo" \
-    | jq '.systemInfo.version')"
-  echo "Keycloak version: $KEYCLOAK_VERSION"
-  VERSION_MAJOR="$(echo "$KEYCLOAK_VERSION" | tr -d \" | cut -d . -f 1)"
-  if [ "$VERSION_MAJOR" -le 14 ]; then
-    REALM_FILE="realm-export-13-14.json"
-  else
-    REALM_FILE="realm-export.json"
-  fi
-
   # Combine the realm and user config and send it to the Keycloak server
-  HTTP_CODE=$(curl -X POST --data-binary "@$REALM_FILE" \
+  HTTP_CODE=$(curl -X POST --data-binary "@realm-export.json" \
       -s -o /dev/null -w "%{http_code}" \
       -H "Content-Type: application/json" \
       -H "Authorization: bearer $KEYCLOAK_TOKEN" \
