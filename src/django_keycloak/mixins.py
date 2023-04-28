@@ -50,7 +50,7 @@ class KeycloakTestMixin:
         enabled: bool = True,
         actions: Optional[str] = None,
         is_superuser: bool = False,
-        **kwargs
+        **kwargs,
     ) -> dict:
         """
         Creates user on Keycloak's server.
