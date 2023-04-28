@@ -30,8 +30,8 @@ fi
 
 KEYCLOAK_URL=http://$KEYCLOAK_HOST:$KEYCLOAK_PORT
 echo "Waiting for Keycloak to launch on $KEYCLOAK_URL..."
-# Abort after 60 seconds to avoid blocking (-m --> max time)
-timeout --foreground 60 bash -c -- "\
+# Abort after 90 seconds to avoid blocking (-m --> max time)
+timeout --foreground 90 bash -c -- "\
   while ! curl -s -f -o /dev/null -m 2 \"$KEYCLOAK_URL/realms/master\"; do \
     echo 'Waiting...'; sleep 2 & wait; \
   done"

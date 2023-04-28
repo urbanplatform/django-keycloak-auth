@@ -22,7 +22,7 @@ jobs:
     strategy:
       matrix:
         python-version: ["3.8", "3.9", "3.10", "3.11"]
-        keycloak-tag: ["17.0.1", "18.0.2", "19.0.3", "20.0.5", "21.1"]
+        keycloak-tag: ["17.0.1", "18.0.2", "19.0.3", "20.0.5"]
 
     steps:
       - uses: actions/checkout@v3
