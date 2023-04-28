@@ -28,8 +28,8 @@ packages = [
 ]
 
 [tool.poetry.dependencies]
-python = ">=3.7,<4"
-django = ">=2.2"
+python = ">=3.8,<4"
+django = ">=3.2"
 djangorestframework = ">=3.0"
 dry-rest-permissions = ">=0.1"
 python-keycloak = ">=2.6.0"
@@ -41,9 +41,10 @@ coverage = "~=7.1"
 debugpy = "~=1.6"
 ipdb = "~=0.13"
 pip-check = "~=2.8"
+setuptools = "^67.7.2"
 
 [tool.black]
-target-version = ['py37']
+target-version = ['py38']
 extend-exclude = '''
 # A regex preceded with ^/ will apply only to files and directories
 # in the root of the project.
