@@ -320,6 +320,21 @@ files = [
 ]
 
 [[package]]
+name = "deprecation"
+version = "2.1.0"
+description = "A library to handle automated deprecations"
+category = "main"
+optional = false
+python-versions = "*"
+files = [
+    {file = "deprecation-2.1.0-py2.py3-none-any.whl", hash = "sha256:a10811591210e1fb0e768a8c25517cabeabcba6f0bf96564f8ff45189f90b14a"},
+    {file = "deprecation-2.1.0.tar.gz", hash = "sha256:72b3bde64e5d778694b0cf68178aed03d15e15477116add3fb773e581f9518ff"},
+]
+
+[package.dependencies]
+packaging = "*"
+
+[[package]]
 name = "Django"
 version = "3.2.17"
 description = "A high-level Python Web framework that encourages rapid development and clean, pragmatic design."
@@ -525,7 +540,7 @@ files = [
 name = "packaging"
 version = "23.0"
 description = "Core utilities for Python packages"
-category = "dev"
+category = "main"
 optional = false
 python-versions = ">=3.7"
 files = [
@@ -685,21 +700,21 @@ pycryptodome = ["pyasn1", "pycryptodome (>=3.3.1,<4.0.0)"]
 
 [[package]]
 name = "python-keycloak"
-version = "2.9.0"
+version = "2.16.0"
 description = "python-keycloak is a Python package providing access to the Keycloak API."
 category = "main"
 optional = false
 python-versions = ">=3.7,<4.0"
 files = [
-    {file = "python_keycloak-2.9.0-py3-none-any.whl", hash = "sha256:f2b42fc27b474ac791900eee38049ba9342613118f599e8214e85cfd58d4329e"},
-    {file = "python_keycloak-2.9.0.tar.gz", hash = "sha256:a270939000a4431a1f94ccf833ca3884d015635491cfb557405bc78e80a12b28"},
+    {file = "python_keycloak-2.16.0-py3-none-any.whl", hash = "sha256:d29e8c12b377c6bd5f209aa0df3ee333ed7cce37c80c1727ab3c3dc25b32733e"},
+    {file = "python_keycloak-2.16.0.tar.gz", hash = "sha256:7bd6ef04fd5553661c7b1e8e9432c607d1ec4099cb3acd5711e11ebbc486b88e"},
 ]
 
 [package.dependencies]
+deprecation = ">=2.1.0,<3.0.0"
 python-jose = ">=3.3.0,<4.0.0"
-requests = ">=2.20.0,<3.0.0"
-requests-toolbelt = ">=0.9.1,<0.10.0"
-urllib3 = ">=1.26.0,<2.0.0"
+requests = ">=2.20.0"
+requests-toolbelt = ">=0.10.1,<0.11.0"
 
 [package.extras]
 docs = ["Sphinx (>=5.3.0,<6.0.0)", "alabaster (>=0.7.12,<0.8.0)", "commonmark (>=0.9.1,<0.10.0)", "m2r2 (>=0.3.2,<0.4.0)", "mock (>=4.0.3,<5.0.0)", "readthedocs-sphinx-ext (>=2.1.9,<3.0.0)", "recommonmark (>=0.7.1,<0.8.0)", "sphinx-autoapi (>=2.0.0,<3.0.0)", "sphinx-rtd-theme (>=1.0.0,<2.0.0)"]
@@ -740,14 +755,14 @@ use-chardet-on-py3 = ["chardet (>=3.0.2,<6)"]
 
 [[package]]
 name = "requests-toolbelt"
-version = "0.9.1"
+version = "0.10.1"
 description = "A utility belt for advanced users of python-requests"
 category = "main"
 optional = false
-python-versions = "*"
+python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*"
 files = [
-    {file = "requests-toolbelt-0.9.1.tar.gz", hash = "sha256:968089d4584ad4ad7c171454f0a5c6dac23971e9472521ea3b6d49d610aa6fc0"},
-    {file = "requests_toolbelt-0.9.1-py2.py3-none-any.whl", hash = "sha256:380606e1d10dc85c3bd47bf5a6095f815ec007be7a8b69c878507068df059e6f"},
+    {file = "requests-toolbelt-0.10.1.tar.gz", hash = "sha256:62e09f7ff5ccbda92772a29f394a49c3ad6cb181d568b1337626b2abb628a63d"},
+    {file = "requests_toolbelt-0.10.1-py2.py3-none-any.whl", hash = "sha256:18565aa58116d9951ac39baa288d3adb5b3ff975c4f25eee78555d89e8f247f7"},
 ]
 
 [package.dependencies]
